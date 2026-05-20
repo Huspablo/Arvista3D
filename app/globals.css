@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+/* ── Tailwind v4 theme tokens ── */
+@theme {
+  --font-serif: var(--font-cormorant);
+  --font-sans:  var(--font-raleway);
+
+  --color-bg:        oklch(97.5% 0.007 75);
+  --color-bg2:       oklch(95%   0.010 75);
+  --color-bg3:       oklch(92%   0.012 75);
+  --color-ink:       oklch(14%   0.010 75);
+  --color-ink2:      oklch(38%   0.012 75);
+  --color-ink3:      oklch(60%   0.010 75);
+  --color-gold:      oklch(60%   0.130 82);
+  --color-gold-hi:   oklch(68%   0.140 82);
+  --color-gold-pale: oklch(92%   0.040 82);
+  --color-ok:        oklch(56%   0.14  155);
+  --color-warn:      oklch(62%   0.18  32);
+
+  --shadow-sm: 0 2px  12px oklch(14% 0.010 75 / .07);
+  --shadow-md: 0 8px  40px oklch(14% 0.010 75 / .10);
+  --shadow-lg: 0 24px 80px oklch(14% 0.010 75 / .13);
+}
+
+/* ── Raw CSS variables for opacity composites ── */
+:root {
+  --gold-dim:  oklch(60% 0.130 82 / 0.12);
+  --gold-line: oklch(60% 0.130 82 / 0.25);
+  --border:    oklch(14% 0.010 75 / 0.09);
+  --border-md: oklch(14% 0.010 75 / 0.16);
+  --ok-dim:    oklch(56% 0.14  155 / 0.10);
+  --warn-dim:  oklch(62% 0.18  32  / 0.10);
+}
+
+/* ── Base ── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+@media (hover: hover) {
+  body { cursor: none; }
+}
+
+/* ── Custom cursor ── */
+#cursor {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+}
+
+#cursor-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s, background 0.3s;
+}
+
+#cursor-ring {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid oklch(60% 0.130 82 / 0.45);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  transition:
+    width        0.4s cubic-bezier(.22, 1, .36, 1),
+    height       0.4s cubic-bezier(.22, 1, .36, 1),
+    border-color 0.3s;
+}
+
+body.cursor-hover #cursor-dot  { width: 12px; height: 12px; background: var(--color-gold-hi); }
+body.cursor-hover #cursor-ring { width: 56px;  height: 56px;  border-color: var(--color-gold); }
+body.cursor-drag  #cursor-dot  { width: 6px;   height: 6px; }
+body.cursor-drag  #cursor-ring { width: 72px;  height: 72px;  border-style: dashed; }
+
+@media (hover: none) {
+  #cursor { display: none; }
+  body    { cursor: auto; }
+}
+
+/* ── Scroll reveal ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity   0.9s cubic-bezier(.22, 1, .36, 1),
+    transform 0.9s cubic-bezier(.22, 1, .36, 1);
+}
+
+.reveal.in { opacity: 1; transform: none; }
+
+.rd1 { transition-delay: 0.08s; }
+.rd2 { transition-delay: 0.16s; }
+.rd3 { transition-delay: 0.24s; }
+.rd4 { transition-delay: 0.32s; }
+
+/* ── Keyframe animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fl1 { 0%,100%{transform:rotate(-5deg) translate(0,0)} 50%{transform:rotate(-7deg) translate(5px,-14px)} }
+@keyframes fl2 { 0%,100%{transform:rotate(4deg) translate(0,0)} 50%{transform:rotate(2deg) translate(-6px,-12px)} }
+@keyframes fl3 { 0%,100%{transform:rotate(-3deg) translate(0,0)} 50%{transform:rotate(-5deg) translate(4px,-16px)} }
+@keyframes fl4 { 0%,100%{transform:rotate(7deg) translate(0,0)} 50%{transform:rotate(5deg) translate(-5px,-10px)} }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── Art frame base (floating frames hero) ── */
+.art-frame {
+  position: absolute;
+  border: 1px solid var(--border-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  will-change: transform;
+}
+
+/* ── Abstract art background palettes (reutilizados en toda la app) ── */
+.art-p1  { background: radial-gradient(ellipse at 20% 80%, oklch(70% .12 300) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, oklch(82% .14 82) 0%, transparent 50%), linear-gradient(135deg, oklch(72% .08 280), oklch(88% .08 60)); }
+.art-p2  { background: radial-gradient(ellipse at 70% 60%, oklch(75% .14 145) 0%, transparent 55%), radial-gradient(ellipse at 20% 30%, oklch(88% .10 82) 0%, transparent 45%), linear-gradient(45deg, oklch(70% .05 140), oklch(84% .09 100)); }
+.art-p3  { background: conic-gradient(from 120deg at 40% 60%, oklch(80% .06 30), oklch(85% .15 55), oklch(78% .05 340), oklch(80% .06 30)), radial-gradient(circle at 75% 25%, oklch(90% .12 82) 0%, transparent 40%); }
+.art-p4  { background: radial-gradient(ellipse at 50% 50%, oklch(72% .09 240), transparent 60%), linear-gradient(200deg, oklch(68% .04 220), oklch(76% .07 260)); }
+.art-p5  { background: radial-gradient(ellipse at 30% 40%, oklch(85% .14 82), transparent 45%), linear-gradient(160deg, oklch(78% .04 30), oklch(86% .10 50)); }
+.art-p6  { background: linear-gradient(45deg, oklch(72% .04 170), oklch(82% .10 165) 50%, oklch(90% .10 82)); }
+.art-p7  { background: conic-gradient(from 45deg at 60% 40%, oklch(72% .04 280), oklch(80% .12 300), oklch(88% .14 82), oklch(78% .08 260), oklch(72% .04 280)); }
+.art-p8  { background: radial-gradient(ellipse at 80% 80%, oklch(78% .12 15), transparent 50%), linear-gradient(135deg, oklch(74% .05 20), oklch(84% .10 350)); }
+.art-p9  { background: radial-gradient(ellipse at 20% 30%, oklch(76% .10 200), transparent 55%), linear-gradient(90deg, oklch(72% .03 195), oklch(82% .08 170)); }
+.art-p10 { background: conic-gradient(from 200deg at 35% 55%, oklch(82% .05 60), oklch(88% .14 82), oklch(82% .09 40), oklch(82% .05 60)); }
+.art-p11 { background: radial-gradient(ellipse at 60% 20%, oklch(78% .12 280), transparent 50%), linear-gradient(225deg, oklch(72% .03 270), oklch(80% .07 300)); }
+.art-p12 { background: linear-gradient(170deg, oklch(80% .05 40), oklch(88% .12 60) 50%, oklch(92% .14 82)); }
