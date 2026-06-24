@@ -1,6 +1,20 @@
 'use client'
 
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useArtist } from '@/lib/hooks/use-artist'
+import { useGalleries } from '@/lib/hooks/use-galleries'
+import { useArtworks } from '@/lib/hooks/use-artworks'
+import { PLAN_LIMITS } from '@/lib/services/artist.service'
+
+type Invoice = {
+  id:     string
+  date:   string
+  plan:   string
+  amount: string
+  status: string
+  url:    string | null
+}
 
 const PLANS = [
   {
@@ -59,23 +73,60 @@ const PLANS = [
   },
 ]
 
-const CURRENT_PLAN = 'basico'
-
-// Mock usage
-const USAGE = {
-  galleries: { used: 1,  max: 1  },
-  artworks:  { used: 8,  max: 10 },
-}
-
-const INVOICES = [
-  { date: 'Apr 2026', amount: '—',    status: 'Activo'   },
-  { date: 'Mar 2026', amount: '—',    status: 'Activo'   },
-]
+const PLAN_KEY_MAP = { BASIC: 'basico', STANDARD: 'estandar', PREMIUM: 'premium' } as const
 
 export function PlanManager() {
-  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly')
+  const [billing,     setBilling]     = useState<'monthly' | 'annual'>('monthly')
+  const [redirecting, setRedirecting] = useState<string | null>(null)
+  const { data: artist }           = useArtist()
+  const { data: galleries = [] }   = useGalleries()
+  const { data: artworks  = [] }   = useArtworks()
 
-  const currentPlan = PLANS.find(p => p.key === CURRENT_PLAN)!
+  const handleUpgrade = async (planKey: string) => {
+    const planEnum = planKey === 'estandar' ? 'STANDARD' : 'PREMIUM'
+    setRedirecting(planKey)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ plan: planEnum }),
+      })
+      const { url } = await res.json()
+      if (url) window.location.href = url
+    } finally {
+      setRedirecting(null)
+    }
+  }
+
+  const handlePortal = async () => {
+    setRedirecting('portal')
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' })
+      const { url } = await res.json()
+      if (url) window.location.href = url
+    } finally {
+      setRedirecting(null)
+    }
+  }
+
+  const { data: invoices = [] } = useQuery<Invoice[]>({
+    queryKey: ['stripe-invoices'],
+    queryFn:  async () => {
+      const res = await fetch('/api/stripe/invoices')
+      if (!res.ok) return []
+      return res.json()
+    },
+  })
+
+  const planEnum    = artist?.plan ?? 'BASIC'
+  const planKey     = PLAN_KEY_MAP[planEnum]
+  const limits      = PLAN_LIMITS[planEnum]
+  const currentPlan = PLANS.find(p => p.key === planKey)!
+
+  const usage = {
+    galleries: { used: galleries.length,                                    max: limits.galleries           },
+    artworks:  { used: artworks.filter(a => a.status === 'EXPOSED').length, max: limits.artworksPerGallery  },
+  }
 
   return (
     <div>
@@ -94,8 +145,8 @@ export function PlanManager() {
 
         <div className="grid grid-cols-2 gap-6 max-md:grid-cols-1">
           {[
-            { label: 'Galerías',       used: USAGE.galleries.used, max: USAGE.galleries.max },
-            { label: 'Obras (galería más llena)', used: USAGE.artworks.used,  max: USAGE.artworks.max  },
+            { label: 'Galerías',       used: usage.galleries.used, max: usage.galleries.max },
+            { label: 'Obras expuestas', used: usage.artworks.used,  max: usage.artworks.max  },
           ].map(u => (
             <div key={u.label}>
               <div className="flex justify-between text-[12px] mb-2">
@@ -141,9 +192,9 @@ export function PlanManager() {
       </div>
 
       {/* Plan cards */}
-      <div className="grid gap-4 mb-12 max-md:grid-cols-1 reveal rd2" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 reveal rd2">
         {PLANS.map((plan) => {
-          const isCurrent = plan.key === CURRENT_PLAN
+          const isCurrent = plan.key === planKey
           const price     = billing === 'annual' ? Math.round(plan.price * 0.8) : plan.price
 
           return (
@@ -179,9 +230,14 @@ export function PlanManager() {
                   )}
                 </div>
                 {billing === 'annual' && plan.price > 0 && (
-                  <p className="text-[11px] text-ok">
-                    {Math.round(plan.price * 0.2 * 12)}€ ahorrados al año
-                  </p>
+                  <div className="flex flex-col gap-0.5 mt-1">
+                    <p className="text-[11px] text-ok">
+                      {Math.round(plan.price * 0.2 * 12)}€ ahorrados al año
+                    </p>
+                    <p className="text-[11px] text-ink3">
+                      Facturado anualmente · {price * 12}€/año
+                    </p>
+                  </div>
                 )}
               </div>
 
@@ -198,19 +254,35 @@ export function PlanManager() {
 
               <div className="p-6 pt-0">
                 {isCurrent ? (
-                  <div className="text-center text-[12px] text-ink3 py-3 border border-(--border)">
-                    Plan actual
+                  <div className="flex flex-col gap-2">
+                    <div className="text-center text-[12px] text-ink3 py-3 border border-(--border)">
+                      Plan actual
+                    </div>
+                    {artist?.stripeCustomerId && (
+                      <button
+                        type="button"
+                        onClick={handlePortal}
+                        disabled={redirecting === 'portal'}
+                        className="text-[11px] text-ink3 hover:text-ink transition-colors disabled:opacity-50"
+                      >
+                        {redirecting === 'portal' ? 'Abriendo…' : 'Gestionar suscripción →'}
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <button
                     type="button"
-                    className={`w-full relative overflow-hidden text-[13px] py-3 font-medium transition-all ease-[cubic-bezier(.22,1,.36,1)] group hover:-translate-y-px ${
+                    onClick={() => plan.price > 0 ? handleUpgrade(plan.key) : handlePortal()}
+                    disabled={redirecting === plan.key}
+                    className={`w-full relative overflow-hidden text-[13px] py-3 font-medium rounded-xs transition-all ease-[cubic-bezier(.22,1,.36,1)] group hover:-translate-y-px disabled:opacity-60 ${
                       plan.key === 'estandar'
                         ? 'bg-gold text-bg hover:bg-gold-hi'
                         : 'bg-ink text-bg hover:bg-ink2'
                     }`}
                   >
-                    {plan.price === 0 ? 'Cambiar a Básico' : `Mejorar a ${plan.label}`}
+                    {redirecting === plan.key
+                      ? 'Redirigiendo…'
+                      : plan.price === 0 ? 'Cambiar a Básico' : `Mejorar a ${plan.label}`}
                   </button>
                 )}
               </div>
@@ -221,31 +293,44 @@ export function PlanManager() {
 
       {/* Billing history */}
       <section className="reveal rd3">
-        <h2 className="font-serif text-[20px] font-bold mb-5">Historial de facturación</h2>
+        <h2 className="font-serif text-[22px] font-bold mb-5">Historial de facturación</h2>
         <div className="border border-(--border)">
-          <div className="grid text-[10px] tracking-[2px] uppercase text-ink3 px-5 py-3 border-b border-(--border) bg-bg2"
-            style={{ gridTemplateColumns: '1fr 1fr 1fr auto' }}>
+          <div className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[1fr_1fr_1fr_auto] text-[10px] tracking-[2px] uppercase text-ink3 px-5 py-3 border-b border-(--border) bg-bg2">
             <span>Período</span>
-            <span>Plan</span>
+            <span className="hidden md:block">Plan</span>
             <span>Importe</span>
             <span>Estado</span>
           </div>
-          {INVOICES.map((inv) => (
+          {invoices.map((inv: Invoice) => (
             <div
-              key={inv.date}
-              className="grid items-center px-5 py-4 text-[13px] border-b border-(--border) last:border-b-0"
-              style={{ gridTemplateColumns: '1fr 1fr 1fr auto' }}
+              key={inv.id}
+              className="grid grid-cols-[1fr_auto_auto] md:grid-cols-[1fr_1fr_1fr_auto] items-center px-5 py-4 text-[13px] border-b border-(--border) last:border-b-0"
             >
               <span className="text-ink">{inv.date}</span>
-              <span className="text-ink3">Básico</span>
+              <span className="hidden md:block text-ink3">{inv.plan}</span>
               <span className="text-ink3">{inv.amount}</span>
-              <span className="text-[11px] px-2 py-0.5 bg-(--ok-dim) text-ok border border-[oklch(56%_0.14_155/0.2)]">
-                {inv.status}
-              </span>
+              {inv.url ? (
+                <a
+                  href={inv.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] px-2 py-0.5 bg-(--ok-dim) text-ok border border-[oklch(56%_0.14_155/0.2)] no-underline hover:underline"
+                >
+                  {inv.status}
+                </a>
+              ) : (
+                <span className="text-[11px] px-2 py-0.5 bg-(--ok-dim) text-ok border border-[oklch(56%_0.14_155/0.2)]">
+                  {inv.status}
+                </span>
+              )}
             </div>
           ))}
-          {INVOICES.length === 0 && (
-            <div className="px-5 py-8 text-[13px] text-ink3 text-center">Sin facturas aún</div>
+          {invoices.length === 0 && (
+            <div className="px-5 py-12 flex flex-col items-center gap-3 text-center">
+              <span className="font-serif text-[44px] leading-none text-ink3 opacity-15 select-none">◎</span>
+              <span className="text-[14px] text-ink3">Sin facturas todavía</span>
+              <span className="text-[12px] text-ink3 opacity-60">Las facturas aparecerán aquí tras tu primera suscripción.</span>
+            </div>
           )}
         </div>
         <p className="text-[12px] text-ink3 mt-3">Las facturas se envían automáticamente al email de tu cuenta.</p>

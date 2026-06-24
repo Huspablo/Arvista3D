@@ -1,10 +1,9 @@
 import Link from 'next/link'
 
 const ACTIONS = [
-  { href: '/dashboard/artworks/new', icon: '+', label: 'Nueva obra',   sub: 'Subir & publicar'  },
-  { href: '/dashboard/galleries',    icon: '◻', label: 'Ver galería',  sub: 'Vista pública'     },
-  { href: '#',                       icon: '↗', label: 'Compartir',    sub: 'Link a perfil'     },
-  { href: '/dashboard/plan',         icon: '◎', label: 'Mejorar plan', sub: 'Más galerías'      },
+  { href: '/dashboard/artworks/new', icon: '+', label: 'Nueva obra',   sub: 'Subir & publicar' },
+  { href: '/dashboard/galleries',    icon: '◻', label: 'Ver galería',  sub: 'Vista pública'    },
+  { href: '/dashboard/plan',         icon: '◎', label: 'Mejorar plan', sub: 'Más galerías'     },
 ]
 
 export function QuickActions() {
@@ -13,7 +12,7 @@ export function QuickActions() {
       <div className="flex items-center justify-between mb-5 reveal">
         <span className="font-serif text-[22px] font-bold">Acciones rápidas</span>
       </div>
-      <div className="grid grid-cols-2 gap-2 reveal rd1">
+      <div className="grid grid-cols-3 gap-2 reveal rd1">
         {ACTIONS.map(a => (
           <Link
             key={a.href}

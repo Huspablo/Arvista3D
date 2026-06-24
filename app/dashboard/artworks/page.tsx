@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { Topbar }      from '@/components/dashboard/topbar'
 import { ArtworksList } from '@/components/dashboard/artworks-list'
-import { ScrollReveal } from '@/components/ui/scroll-reveal'
 
 export default function ArtworksPage() {
   return (
@@ -21,7 +20,6 @@ export default function ArtworksPage() {
       <div className="flex-1">
         <ArtworksList />
       </div>
-      <ScrollReveal />
     </>
   )
 }

@@ -3,17 +3,37 @@
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { MOCK_ARTWORKS } from '@/lib/mock-data/landing'
 
-export function ShowcaseSection() {
+type ShowcaseArtwork = {
+  id:             string
+  title:          string
+  type:           string
+  assetGallery:   string | null
+  assetThumbnail: string | null
+  viewCount:      number
+  artist:         { name: string }
+  slot: {
+    gallery: { name: string; slug: string }
+  } | null
+}
+
+// Posiciones del grid para las primeras 6 obras
+const GRID_POSITIONS = [
+  { col: '1/6',   row: '1/9'  },
+  { col: '6/9',   row: '1/5'  },
+  { col: '9/13',  row: '1/7'  },
+  { col: '1/5',   row: '9/13' },
+  { col: '5/9',   row: '5/9'  },
+  { col: '9/13',  row: '7/13' },
+]
+
+export function ShowcaseGrid({ artworks }: { artworks: ShowcaseArtwork[] }) {
   const gridRef = useRef<HTMLDivElement>(null)
 
-  // Card tilt on mouse move
   useEffect(() => {
     const grid = gridRef.current
     if (!grid) return
     const cards = grid.querySelectorAll<HTMLDivElement>('.wc')
-
     const cleanup: (() => void)[] = []
 
     cards.forEach(card => {
@@ -25,7 +45,7 @@ export function ShowcaseSection() {
       }
       const onLeave = () => {
         card.style.transform = ''
-        card.style.transition = 'transform 0.6s cubic-bezier(.22,1,.36,1), box-shadow 0.4s, border-color 0.4s'
+        card.style.transition = 'transform 0.6s cubic-bezier(.22,1,.36,1)'
         setTimeout(() => { card.style.transition = '' }, 600)
       }
       card.addEventListener('mousemove', onMove)
@@ -35,72 +55,106 @@ export function ShowcaseSection() {
         card.removeEventListener('mouseleave', onLeave)
       })
     })
-
     return () => cleanup.forEach(fn => fn())
   }, [])
 
-  return (
-    <section className="px-15 pb-30 max-md:px-6 max-md:pb-20" id="obras">
-      <div className="max-w-370 mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-end border-b border-(--border) pb-7 mb-10 reveal max-md:flex-col max-md:items-start max-md:gap-4">
-          <div>
-            <span className="text-[11px] tracking-[6px] uppercase text-gold mb-5 block">Catálogo</span>
-            <h2
-              className="font-serif font-black leading-[.95]"
-              style={{ fontSize: 'clamp(36px, 5vw, 68px)' }}
-            >
-              Obras <em className="italic text-gold">destacadas</em>
-            </h2>
-          </div>
-          <Link
-            href="/obras"
-            className="text-ink2 text-[13px] tracking-[2px] no-underline uppercase border-b border-(--border-md) pb-0.5 hover:border-ink hover:text-ink transition-all whitespace-nowrap"
-          >
-            Ver todas las obras →
-          </Link>
-        </div>
+  const TYPE_LABEL: Record<string, string> = {
+    PAINTING:    'Pintura',
+    SCULPTURE:   'Escultura',
+    PHOTOGRAPHY: 'Fotografía',
+    OTHER:       'Obra',
+  }
 
-        {/* Masonry grid */}
-        <div
-          ref={gridRef}
-          className="grid gap-2.5 max-md:grid-cols-2 max-md:auto-rows-[36px] max-sm:grid-cols-1"
-          style={{
-            gridTemplateColumns: 'repeat(12, 1fr)',
-            gridAutoRows: '44px',
-          }}
-        >
-          {MOCK_ARTWORKS.map((w, i) => (
-            <div
-              key={w.title}
-              className={`wc overflow-hidden relative border border-(--border) hover:shadow-lg hover:border-(--border-md) hover:z-5 transition reveal ${i % 3 === 1 ? 'rd1' : i % 3 === 2 ? 'rd2' : ''} max-md:col-[span_1]! max-md:row-[span_4]! first:max-md:col-[span_2]! first:max-md:row-[span_6]!`}
-              style={{
-                gridColumn: w.col,
-                gridRow: w.row,
-              }}
+  return (
+    <>
+      {/* Mobile/tablet: simple responsive grid */}
+      <div className="grid grid-cols-2 gap-2 lg:hidden">
+        {artworks.slice(0, 4).map((aw) => {
+          const src = aw.assetGallery ?? aw.assetThumbnail
+          return (
+            <Link
+              key={aw.id}
+              href={`/artworks/${aw.id}`}
+              className="aspect-4/3 relative group overflow-hidden bg-bg3 cursor-pointer"
             >
-              <Image
-                src={w.src}
-                alt={w.title}
-                fill
-                sizes="(max-width: 768px) 50vw, 25vw"
-                className="object-cover"
-                priority={i === 0}
-              />
-              {/* Info overlay */}
-              <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-400 flex flex-col justify-end p-5"
-                style={{ background: 'linear-gradient(180deg, transparent 20%, oklch(97.5% 0.007 75 / 0.94) 100%)' }}
-              >
-                <div className="font-serif text-[18px] font-bold mb-0.75 text-ink">{w.title}</div>
-                <div className="text-[11px] text-ink3 tracking-[2px] uppercase">{w.meta}</div>
-                <div className="mt-2.5 text-[11px] text-gold tracking-[2px] uppercase inline-flex items-center gap-1.5">
-                  Ver obra →
-                </div>
+              {src ? (
+                <Image
+                  src={src}
+                  alt={aw.title}
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-ink3 text-4xl font-serif">◇</div>
+              )}
+              <div className="absolute inset-0 bg-ink opacity-0 group-hover:opacity-40 transition-opacity duration-400" />
+              <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-[cubic-bezier(.22,1,.36,1)]">
+                <p className="text-bg text-[10px] tracking-[2px] uppercase mb-0.5">
+                  {TYPE_LABEL[aw.type] ?? 'Obra'} · {aw.artist.name}
+                </p>
+                <p className="text-bg font-serif text-[15px] font-bold leading-tight">{aw.title}</p>
               </div>
-            </div>
-          ))}
-        </div>
+            </Link>
+          )
+        })}
       </div>
-    </section>
+
+      {/* Desktop: complex mosaic */}
+      <div
+        ref={gridRef}
+        className="hidden lg:grid grid-cols-12 grid-rows-12 gap-1 aspect-4/3"
+      >
+        {artworks.slice(0, 6).map((aw, i) => {
+          const pos = GRID_POSITIONS[i]
+          const src = aw.assetGallery ?? aw.assetThumbnail
+          return (
+            <Link
+              key={aw.id}
+              href={`/artworks/${aw.id}`}
+              className="wc relative group overflow-hidden bg-bg3 cursor-pointer"
+              style={{ gridColumn: pos.col, gridRow: pos.row }}
+            >
+              {src ? (
+                <Image
+                  src={src}
+                  alt={aw.title}
+                  fill
+                  sizes="(max-width: 1280px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-ink3 text-4xl font-serif">◇</div>
+              )}
+              <div className="absolute inset-0 bg-ink opacity-0 group-hover:opacity-40 transition-opacity duration-400" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-[cubic-bezier(.22,1,.36,1)]">
+                <p className="text-bg text-[11px] tracking-[2px] uppercase mb-1">
+                  {TYPE_LABEL[aw.type] ?? 'Obra'} · {aw.artist.name}
+                </p>
+                <p className="text-bg font-serif text-[18px] font-bold leading-tight">{aw.title}</p>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </>
+  )
+}
+
+export function ShowcaseEmpty() {
+  return (
+    <div className="border border-(--border) py-24 flex flex-col items-center gap-5 text-center reveal">
+      <span className="font-serif text-[56px] text-ink3/20 leading-none">◇</span>
+      <p className="text-[11px] tracking-[3px] uppercase text-ink3">Próximamente</p>
+      <p className="text-[15px] text-ink3 max-w-xs">
+        Las obras más visitadas aparecerán aquí conforme los artistas publiquen su colección.
+      </p>
+      <Link
+        href="/sign-up"
+        className="mt-2 text-[12px] tracking-[2px] uppercase border-b border-(--border-md) pb-0.5 hover:border-ink transition-colors"
+      >
+        Abre tu galería →
+      </Link>
+    </div>
   )
 }

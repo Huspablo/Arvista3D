@@ -3,8 +3,9 @@
 import dynamic from 'next/dynamic'
 import type { GalleryManifest } from '@/types/manifest'
 
-// Dynamic import kept in a client component so JSX transforms work correctly
-const GalleryCanvas = dynamic(
+type CanvasProps = { manifest: GalleryManifest; galleryId: string; isOwner: boolean }
+
+const GalleryCanvas = dynamic<CanvasProps>(
   () => import('./gallery-canvas').then(m => ({ default: m.GalleryCanvas })),
   {
     ssr: false,
@@ -32,9 +33,11 @@ const GalleryCanvas = dynamic(
 )
 
 interface Props {
-  manifest: GalleryManifest
+  manifest:  GalleryManifest
+  galleryId: string
+  isOwner:   boolean
 }
 
-export function ViewerClient({ manifest }: Props) {
-  return <GalleryCanvas manifest={manifest} />
+export function ViewerClient({ manifest, galleryId, isOwner }: Props) {
+  return <GalleryCanvas manifest={manifest} galleryId={galleryId} isOwner={isOwner} />
 }

@@ -24,9 +24,10 @@ export function Nav({ transparent = false }: NavProps) {
   return (
     <>
       <nav
-        className="fixed top-0 left-0 right-0 z-200 flex items-center justify-between transition-all duration-450 ease-[cubic-bezier(.22,1,.36,1)]"
+        className="fixed top-0 left-0 right-0 z-200 flex items-center justify-between transition-all duration-450 ease-[cubic-bezier(.22,1,.36,1)] px-6 md:px-15"
         style={{
-          padding: scrolled ? '16px 60px' : '32px 60px',
+          paddingTop:    scrolled ? '16px' : '32px',
+          paddingBottom: scrolled ? '16px' : '32px',
           background: scrolled ? 'oklch(97.5% 0.007 75 / 0.92)' : 'transparent',
           backdropFilter: scrolled ? 'blur(24px) saturate(1.4)' : 'none',
           borderBottom: `1px solid ${scrolled ? 'var(--border)' : 'transparent'}`,
@@ -40,9 +41,9 @@ export function Nav({ transparent = false }: NavProps) {
         {/* Desktop links */}
         <div className="hidden md:flex gap-9 items-center">
           {[
-            { href: '/#obras',     label: 'Obras' },
-            { href: '/#galerías',  label: 'Galerías' },
-            { href: '/#artistas',  label: 'Artistas' },
+            { href: '/obras',     label: 'Obras' },
+            { href: '/galleries', label: 'Galerías' },
+            { href: '/artists',   label: 'Artistas' },
           ].map(({ href, label }) => (
             <Link
               key={href}
@@ -50,7 +51,7 @@ export function Nav({ transparent = false }: NavProps) {
               className="text-ink3 text-[14px] font-normal tracking-[0.3px] no-underline hover:text-ink transition-colors relative group"
             >
               {label}
-              <span className="absolute bottom-[-2px] left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)]" />
+              <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300 ease-[cubic-bezier(.22,1,.36,1)]" />
             </Link>
           ))}
           <Link
@@ -70,7 +71,7 @@ export function Nav({ transparent = false }: NavProps) {
         >
           <span className={`block h-[1.5px] rounded-sm bg-ink origin-center transition-all duration-350 ease-[cubic-bezier(.22,1,.36,1)] w-5.5 ${menuOpen ? 'translate-y-[6.5px] rotate-45' : ''}`} />
           <span className={`block h-[1.5px] rounded-sm bg-ink w-4 transition-all duration-250 ${menuOpen ? 'opacity-0 scale-x-0' : ''}`} />
-          <span className={`block h-[1.5px] rounded-sm bg-ink origin-center transition-all duration-350 ease-[cubic-bezier(.22,1,.36,1)] w-5.5 ${menuOpen ? '-translate-y-[6.5px] -rotate-45' : ''}`} />
+          <span className={`block h-[1.5px] rounded-sm bg-ink origin-center transition-all duration-350 ease-[cubic-bezier(.22,1,.36,1)] w-5.5 ${menuOpen ? 'translate-y-[-6.5px] -rotate-45' : ''}`} />
         </button>
       </nav>
 
@@ -93,9 +94,9 @@ export function Nav({ transparent = false }: NavProps) {
             Menú
           </p>
           {[
-            { href: '/#obras',    label: 'Obras' },
-            { href: '/#galerías', label: 'Galerías' },
-            { href: '/#artistas', label: 'Artistas' },
+            { href: '/obras',     label: 'Obras' },
+            { href: '/galleries', label: 'Galerías' },
+            { href: '/artists',   label: 'Artistas' },
             { href: '/dashboard', label: 'Mi cuenta' },
           ].map(({ href, label }, i) => (
             <Link

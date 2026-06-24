@@ -1,11 +1,11 @@
 import Link from 'next/link'
-import { Topbar }        from '@/components/dashboard/topbar'
-import { Greeting }      from '@/components/dashboard/greeting'
-import { StatsRow }      from '@/components/dashboard/stats-row'
-import { GalleriesGrid } from '@/components/dashboard/galleries-grid'
-import { ActivityFeed }  from '@/components/dashboard/activity-feed'
-import { QuickActions }  from '@/components/dashboard/quick-actions'
-import { ScrollReveal }  from '@/components/ui/scroll-reveal'
+import { Topbar }            from '@/components/dashboard/topbar'
+import { Greeting }          from '@/components/dashboard/greeting'
+import { StatsRow }          from '@/components/dashboard/stats-row'
+import { FirstStepsBanner }  from '@/components/dashboard/first-steps-banner'
+import { GalleriesGrid }     from '@/components/dashboard/galleries-grid'
+import { QuickActions }      from '@/components/dashboard/quick-actions'
+import { ScrollReveal }      from '@/components/ui/scroll-reveal'
 
 export default function DashboardPage() {
   return (
@@ -34,14 +34,10 @@ export default function DashboardPage() {
       <div className="flex-1 px-12 py-10 max-md:px-6">
         <Greeting />
         <StatsRow />
+        <FirstStepsBanner />
         <GalleriesGrid />
 
-        {/* Bottom two-col */}
-        <div
-          className="grid gap-6 mt-8 max-md:grid-cols-1"
-          style={{ gridTemplateColumns: '1.5fr 1fr' }}
-        >
-          <ActivityFeed />
+        <div className="mt-8">
           <QuickActions />
         </div>
       </div>

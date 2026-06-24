@@ -1,13 +1,36 @@
+'use client'
+
+import dynamic from 'next/dynamic'
+
+const GalleryPreview3D = dynamic(
+  () => import('./gallery-preview-3d').then(m => ({ default: m.GalleryPreview3D })),
+  {
+    ssr:     false,
+    loading: () => <div className="w-full h-full art-p1" />,
+  },
+)
+
 export function ManifestoSection() {
   return (
-    <section id="galerías" className="py-35 px-15 max-w-370 mx-auto grid grid-cols-[.85fr_1fr] gap-25 items-center max-md:grid-cols-1 max-md:gap-12 max-md:py-20 max-md:px-6">
-      {/* Left */}
+    <section
+      id="galerías"
+      className="py-35 px-15 max-w-370 mx-auto grid grid-cols-[1fr_.85fr] gap-25 items-center max-md:grid-cols-1 max-md:gap-12 max-md:py-20 max-md:px-6"
+    >
+      {/* ── Left: live 3D gallery preview ── */}
+      <div
+        className="reveal rd1 max-md:hidden overflow-hidden border border-(--border) rounded-xs"
+        style={{ aspectRatio: '4 / 5' }}
+      >
+        <GalleryPreview3D />
+      </div>
+
+      {/* ── Right: copy ── */}
       <div>
         <span
-          className="font-serif font-black leading-[.8] block mb-[-8px] reveal"
+          className="font-serif font-black leading-[.8] block -mb-2 reveal"
           style={{
-            fontSize: 'clamp(100px, 14vw, 180px)',
-            color: 'transparent',
+            fontSize:         'clamp(100px, 14vw, 180px)',
+            color:            'transparent',
             WebkitTextStroke: '1px var(--border-md)',
           }}
         >
@@ -23,15 +46,9 @@ export function ManifestoSection() {
           Tu espacio.<br /><em className="italic text-gold">Tu identidad.</em>
         </h2>
         <p className="text-[17px] leading-[1.85] text-ink2 max-w-100 reveal rd2">
-          Diseña galerías tridimensionales que reflejen tu visión artística. Cada espacio es tuyo — curado, personalizado y listo para recibir visitantes de cualquier parte del mundo.
+          Diseña galerías tridimensionales que reflejen tu visión artística. Cada espacio es tuyo —
+          curado, personalizado y listo para recibir visitantes de cualquier parte del mundo.
         </p>
-      </div>
-
-      {/* Right — mosaic */}
-      <div className="grid grid-cols-2 gap-2.5 reveal rd2 max-md:hidden">
-        <div className="row-span-2 border border-(--border) overflow-hidden hover:scale-[1.02] transition-transform duration-600 ease-[cubic-bezier(.22,1,.36,1)] art-p1" />
-        <div className="aspect-square border border-(--border) overflow-hidden hover:scale-[1.02] transition-transform duration-600 ease-[cubic-bezier(.22,1,.36,1)] art-p5" />
-        <div className="aspect-square border border-(--border) overflow-hidden hover:scale-[1.02] transition-transform duration-600 ease-[cubic-bezier(.22,1,.36,1)] art-p3" />
       </div>
     </section>
   )

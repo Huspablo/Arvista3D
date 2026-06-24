@@ -6,3 +6,149 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ─── Enumeraciones ────────────────────────────────────────────────────────────
+
+enum Plan {
+  BASIC
+  STANDARD
+  PREMIUM
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum FloorMaterial {
+  CONCRETE
+  PARQUET
+  MARBLE
+}
+
+enum LightingPreset {
+  WARM
+  NEUTRAL
+  DRAMATIC
+}
+
+enum ArtworkType {
+  PAINTING
+  SCULPTURE
+  PHOTOGRAPHY
+  OTHER
+}
+
+enum ArtworkStatus {
+  DRAFT    // existe pero no está asignada a ninguna galería
+  EXPOSED  // asignada a un slot de galería y visible en ella
+}
+
+enum DisplayMode {
+  WALL_PLANE   // pinturas y fotografías — plano texturizado en pared
+  FLOOR_MODEL  // esculturas — modelo GLB sobre pedestal
+}
+
+// ─── Modelos ──────────────────────────────────────────────────────────────────
+
+model Artist {
+  id        String @id @default(cuid())
+  clerkId   String @unique  // ID de usuario de Clerk (user_xxxx)
+  name      String @default("")
+  bio       String @default("")
+  website   String?
+  avatarUrl String?
+  plan      Plan   @default(BASIC)
+
+  // Stripe — se rellenan cuando el billing esté activo
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  galleries Gallery[]
+  artworks  Artwork[]
+}
+
+model Gallery {
+  id          String     @id @default(cuid())
+  slug        String     @unique  // URL-safe, generado desde el nombre
+  name        String
+  description String     @default("")
+  visibility  Visibility @default(PRIVATE)
+  templateKey String     @default("white-cube-8")
+
+  // Configuración visual — alimenta el manifest → viewer
+  wallColor      String?        // hex, ej: "#f0ede8"
+  floorMaterial  FloorMaterial  @default(CONCRETE)
+  lightingPreset LightingPreset @default(WARM)
+
+  artistId String
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  slots GallerySlot[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([artistId])
+}
+
+// Un slot es una posición dentro de la plantilla 3D de la galería.
+// Se crean los 8 slots al crear la galería (plantilla white-cube-8).
+// artwork nulo = slot libre (se renderiza como espacio vacío en el viewer).
+model GallerySlot {
+  id          String      @id @default(cuid())
+  position    Int         // índice 0-basado dentro de la plantilla (0-7 en white-cube-8)
+  displayMode DisplayMode // determina qué tipo de asset espera el viewer
+
+  galleryId String
+  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+
+  // @unique garantiza que una obra solo puede estar en un slot a la vez
+  artworkId String?  @unique
+  artwork   Artwork? @relation(fields: [artworkId], references: [id], onDelete: SetNull)
+
+  @@unique([galleryId, position]) // sin posiciones duplicadas dentro de una galería
+  @@index([galleryId])
+}
+
+model Artwork {
+  id          String        @id @default(cuid())
+  title       String
+  description String        @default("")
+  type        ArtworkType
+  status      ArtworkStatus @default(DRAFT)
+  year        Int?
+  technique   String?
+  edition     String?
+  tags        String[]      @default([])
+
+  // Dimensiones en cm
+  dimWidth  Float?
+  dimHeight Float?
+  dimDepth  Float?
+
+  viewCount   Int           @default(0) // incrementado al visitar la página pública de la obra
+
+  // Assets de storage
+  // assetOriginalKey: clave R2 del archivo original subido
+  // Los demás son URLs de CDN ya resueltas (nunca claves R2 crudas)
+  assetOriginalKey String?
+  assetThumbnail   String? // miniatura para listas y overlay
+  assetGallery     String? // textura de pared para WALL_PLANE
+  assetDetail      String? // imagen alta resolución para panel de detalle
+  assetModel       String? // modelo .glb para FLOOR_MODEL (esculturas)
+
+  artistId String
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+
+  slot GallerySlot? // presente cuando status = EXPOSED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([artistId])
+  @@index([artistId, status])
+}

@@ -116,6 +116,21 @@ body.cursor-drag  #cursor-ring { width: 72px;  height: 72px;  border-style: dash
 @keyframes fl3 { 0%,100%{transform:rotate(-3deg) translate(0,0)} 50%{transform:rotate(-5deg) translate(4px,-16px)} }
 @keyframes fl4 { 0%,100%{transform:rotate(7deg) translate(0,0)} 50%{transform:rotate(5deg) translate(-5px,-10px)} }
 @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes skeleton-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+@keyframes artwork-progress {
+  0%   { transform: translateX(-200%); }
+  100% { transform: translateX(500%); }
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.overlay-slide-in {
+  animation: slideInRight 0.32s cubic-bezier(.22,1,.36,1) both;
+}
 
 /* ── Art frame base (floating frames hero) ── */
 .art-frame {

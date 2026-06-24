@@ -1,6 +1,6 @@
 const ITEMS = [
   'Galerías inmersivas', 'Arte contemporáneo', 'Escultura digital',
-  'Fotografía de autor', 'Instalaciones 3D', 'Video art', 'Pintura', 'Arte emergente',
+  'Fotografía de autor', 'Instalaciones 3D', 'Videoarte', 'Pintura', 'Arte emergente',
 ]
 
 export function TickerSection() {

@@ -1,6 +1,7 @@
-import Link               from 'next/link'
-import { Topbar }          from '@/components/dashboard/topbar'
-import { NewGalleryForm }  from '@/components/dashboard/new-gallery-form'
+import Link                from 'next/link'
+import { Topbar }           from '@/components/dashboard/topbar'
+import { NewGalleryForm }   from '@/components/dashboard/new-gallery-form'
+import { ScrollReveal }     from '@/components/ui/scroll-reveal'
 
 export default function NewGalleryPage() {
   return (
@@ -19,6 +20,7 @@ export default function NewGalleryPage() {
       <div className="flex-1">
         <NewGalleryForm />
       </div>
+      <ScrollReveal />
     </>
   )
 }

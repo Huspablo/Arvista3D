@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Gold gradient: bright top-left → deep bottom-right -->
+    <linearGradient id="gout" x1="15%" y1="5%" x2="85%" y2="95%">
+      <stop offset="0%"   stop-color="#f4e07a"/>
+      <stop offset="42%"  stop-color="#d4a838"/>
+      <stop offset="100%" stop-color="#96741e"/>
+    </linearGradient>
+
+    <!-- Reverse gold for inner center sparkle -->
+    <linearGradient id="gin" x1="85%" y1="5%" x2="15%" y2="95%">
+      <stop offset="0%"   stop-color="#f4e07a"/>
+      <stop offset="100%" stop-color="#c9a030"/>
+    </linearGradient>
+
+    <!-- Room ceiling (warm dark) -->
+    <linearGradient id="rc" x1="40%" y1="0%" x2="60%" y2="100%">
+      <stop offset="0%"   stop-color="#2e2618"/>
+      <stop offset="100%" stop-color="#1f1a10"/>
+    </linearGradient>
+
+    <!-- Room left wall (medium dark) -->
+    <linearGradient id="rl" x1="100%" y1="0%" x2="0%" y2="0%">
+      <stop offset="0%"   stop-color="#1e1910"/>
+      <stop offset="100%" stop-color="#131009"/>
+    </linearGradient>
+
+    <!-- Room right wall (deepest dark) -->
+    <linearGradient id="rr" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#18140f"/>
+      <stop offset="100%" stop-color="#0d0c08"/>
+    </linearGradient>
+
+    <!-- Clip room faces to inner diamond shape -->
+    <clipPath id="dc">
+      <polygon points="256,148 364,256 256,364 148,256"/>
+    </clipPath>
+  </defs>
+
+  <!-- ── Background ── -->
+  <rect width="512" height="512" rx="82" fill="#141210"/>
+
+  <!-- ── LARGE OUTER DIAMOND (gold) ──
+       Outer: top(256,44) right(468,256) bottom(256,468) left(44,256)
+       This is the dominant element — fills ~85% of the icon
+  -->
+  <polygon points="256,44 468,256 256,468 44,256" fill="url(#gout)"/>
+
+  <!-- ── DARK INNER DIAMOND (gallery room window) ──
+       Inner: top(256,148) right(364,256) bottom(256,364) left(148,256)
+       Radius 108 vs outer 212 → 51% scale → generous gold border around it
+  -->
+  <polygon points="256,148 364,256 256,364 148,256" fill="#141210"/>
+
+  <!-- ── ISOMETRIC ROOM inside (clipped to inner diamond) ──
+       Room apex layout scaled to inner diamond:
+         A = top-back   256, 148
+         B = right-back 364, 210
+         C = inner      256, 268   (where 3 faces meet, ~54% down)
+         D = left-back  148, 210
+         C'= front-bot  256, 364
+         B'= right-bot  364, 302
+         D'= left-bot   148, 302
+  -->
+  <g clip-path="url(#dc)">
+    <!-- Ceiling -->
+    <polygon points="256,148 364,210 256,268 148,210" fill="url(#rc)"/>
+    <!-- Left wall -->
+    <polygon points="148,210 256,268 256,364 148,302" fill="url(#rl)"/>
+    <!-- Right wall -->
+    <polygon points="364,210 256,268 256,364 364,302" fill="url(#rr)"/>
+    <!-- Gold edge lines in room -->
+    <line x1="256" y1="268" x2="256" y2="364"
+      stroke="#c9a840" stroke-width="2" stroke-opacity="0.5"/>
+    <line x1="256" y1="148" x2="364" y2="210"
+      stroke="#c9a840" stroke-width="1.2" stroke-opacity="0.22"/>
+    <line x1="256" y1="148" x2="148" y2="210"
+      stroke="#c9a840" stroke-width="1.2" stroke-opacity="0.22"/>
+  </g>
+
+  <!-- ── SMALL INNER GOLD DIAMOND (center sparkle / re-fill) ──
+       Radius 44 → top(256,212) right(300,256) bottom(256,300) left(212,256)
+  -->
+  <polygon points="256,212 300,256 256,300 212,256" fill="url(#gin)" fill-opacity="0.92"/>
+
+  <!-- Center highlight -->
+  <circle cx="256" cy="256" r="11" fill="#f6edbe" fill-opacity="0.6"/>
+</svg>

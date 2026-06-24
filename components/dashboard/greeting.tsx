@@ -1,14 +1,18 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useArtist } from '@/lib/hooks/use-artist'
 
 export function Greeting() {
   const [timeLabel, setTimeLabel] = useState('')
+  const { data: artist } = useArtist()
 
   useEffect(() => {
     const h = new Date().getHours()
     setTimeLabel(h < 13 ? 'Buenos días' : h < 20 ? 'Buenas tardes' : 'Buenas noches')
   }, [])
+
+  const firstName = artist?.name?.trim().split(' ')[0] ?? null
 
   return (
     <div className="mb-10 reveal in">
@@ -17,8 +21,12 @@ export function Greeting() {
         className="font-serif font-bold leading-[1.1]"
         style={{ fontSize: 'clamp(28px, 3vw, 42px)' }}
       >
-        Bienvenida de nuevo,<br />
-        <em className="italic text-gold">Mariana.</em>
+        Bienvenido de nuevo,<br />
+        {firstName ? (
+          <em className="italic text-gold">{firstName}.</em>
+        ) : (
+          <span className="inline-block h-9 w-32 rounded-xs bg-(--border) animate-pulse align-bottom" />
+        )}
       </h1>
     </div>
   )
