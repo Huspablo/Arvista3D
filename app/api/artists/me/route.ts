@@ -6,7 +6,9 @@ import { UpdateArtistSchema } from '@/lib/schemas'
 export async function GET() {
   const { artist, error } = await requireArtist()
   if (error) return error
-  return NextResponse.json(artist)
+  // Omitir campos internos de facturación y autenticación antes de enviar al cliente
+  const { stripeCustomerId: _sc, stripeSubscriptionId: _ss, clerkId: _ck, ...safeArtist } = artist
+  return NextResponse.json(safeArtist)
 }
 
 export async function PATCH(req: Request) {

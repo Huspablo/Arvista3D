@@ -39,8 +39,10 @@ export const processArtworkUpload = inngest.createFunction(
     const assetKeys = await step.run('generate-and-upload-variants', async () => {
       const results: Record<string, string> = {}
 
+      const sharpInput = Buffer.from((originalBuffer as unknown as { data: number[] }).data)
+
       for (const v of VARIANTS) {
-        const webpBuffer = await sharp(originalBuffer)
+        const webpBuffer = await sharp(sharpInput)
           .resize(v.width, v.height, { fit: v.fit, withoutEnlargement: true })
           .webp({ quality: 85 })
           .toBuffer()

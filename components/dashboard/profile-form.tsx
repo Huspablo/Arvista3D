@@ -96,7 +96,7 @@ export function ProfileForm() {
     setNameError('')
     setApiError('')
     updateArtist.mutate(
-      { name: displayName.trim(), bio, website: website || undefined },
+      { name: displayName.trim(), bio, website: website.trim() || null },
       {
         onSuccess: () => { setSaved(true); setTimeout(() => setSaved(false), 2500) },
         onError:   (err) => setApiError(err.message),

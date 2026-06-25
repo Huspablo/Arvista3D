@@ -23,7 +23,7 @@ export function useGalleries() {
 export function useCreateGallery() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (data: { name: string; description?: string; visibility?: 'PUBLIC' | 'PRIVATE' }) => {
+    mutationFn: async (data: { name: string; description?: string; visibility?: 'PUBLIC' | 'PRIVATE'; templateKey?: string }) => {
       const res = await fetch('/api/galleries', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },

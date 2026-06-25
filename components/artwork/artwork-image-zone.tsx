@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface Props {
   arts:  string[]
@@ -84,7 +85,7 @@ export function ArtworkImageZone({ arts, title }: Props) {
                   }`}
                 >
                   {hasImg ? (
-                    <img src={src} alt="" className="w-full h-full object-cover" /> // eslint-disable-line
+                    <Image src={src} alt="" width={72} height={54} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center" style={{ background: 'oklch(18% 0.008 75)' }}>
                       <span className="text-[16px] opacity-20" style={{ color: 'oklch(80% 0.006 75)' }}>◇</span>

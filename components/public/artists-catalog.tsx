@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { ArtistAvatar } from '@/components/ui/artist-avatar'
 
 interface PublicArtist {
   id:             string
@@ -16,28 +16,30 @@ interface PublicArtist {
   primaryGallery: { slug: string; name: string } | null
 }
 
-// Ordenar por obras (los más activos primero), no por fecha de registro
 const SORTS = ['Más activos', 'A–Z', 'Z–A'] as const
 
 export function ArtistsCatalog() {
-  const router = useRouter()
   const [artists,  setArtists]  = useState<PublicArtist[]>([])
   const [loading,  setLoading]  = useState(true)
+  const [error,    setError]    = useState('')
   const [sort,     setSort]     = useState<typeof SORTS[number]>('Más activos')
   const [search,   setSearch]   = useState('')
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true)
+    setError('')
     fetch('/api/artists/public')
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error('Error del servidor'); return r.json() })
       .then(data => { setArtists(data); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [])
+      .catch(() => { setError('No se pudieron cargar los artistas. Comprueba tu conexión.'); setLoading(false) })
+  }
+
+  useEffect(() => { load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
     let list = artists.filter(a => {
       if (!q) return true
-      // Busca en nombre Y en bio
       return a.name.toLowerCase().includes(q) || a.bio?.toLowerCase().includes(q)
     })
     if (sort === 'Más activos') list = [...list].sort((a, b) => b.artworkCount - a.artworkCount)
@@ -84,98 +86,108 @@ export function ArtistsCatalog() {
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="px-15 py-10 grid gap-px bg-(--border) max-md:px-0"
-        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-        {loading
-          ? [1,2,3,4,5,6].map(i => (
-              <div key={i} className="bg-bg px-6 py-7 flex flex-col gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-full bg-bg2 animate-pulse shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-5 bg-bg2 rounded animate-pulse w-2/3" />
-                    <div className="h-3 bg-bg2 rounded animate-pulse w-1/3" />
+      {/* Error */}
+      {error && (
+        <div className="px-15 py-16 flex flex-col items-center gap-4 text-center max-md:px-6">
+          <span className="text-[13px] text-ink3">{error}</span>
+          <button onClick={load} className="text-[12px] text-gold border-b border-gold">Reintentar</button>
+        </div>
+      )}
+
+      {/* Grid con tarjetas de artista */}
+      {!error && (
+        <div className="px-10 py-10 max-md:px-4 max-md:py-6">
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+              {[1,2,3,4,5,6].map(i => (
+                <div key={i} className="bg-bg border border-(--border) px-7 py-8 flex flex-col gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-20 h-20 rounded-full bg-bg3 animate-pulse shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-5 bg-bg3 rounded-xs animate-pulse w-2/3" />
+                      <div className="h-3 bg-bg3 rounded-xs animate-pulse w-1/3" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-3 bg-bg3 rounded-xs animate-pulse w-full" />
+                    <div className="h-3 bg-bg3 rounded-xs animate-pulse w-4/5" />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="h-3 bg-bg2 rounded animate-pulse w-full" />
-                  <div className="h-3 bg-bg2 rounded animate-pulse w-4/5" />
-                  <div className="h-3 bg-bg2 rounded animate-pulse w-3/5" />
-                </div>
-              </div>
-            ))
-          : filtered.map((a, i) => (
-              <Link
-                key={a.id}
-                href={`/artists/${a.id}`}
-                className={`bg-bg no-underline flex flex-col group reveal ${i > 0 && i < 4 ? `rd${i}` : ''}`}
-              >
-                {/* Avatar + nombre + stats */}
-                <div className="px-6 pt-7 pb-5 flex items-start gap-4">
-                  {a.avatarUrl ? (
-                    <img src={a.avatarUrl} alt={a.name} // eslint-disable-line
-                      className="w-14 h-14 rounded-full object-cover shrink-0 transition-transform duration-500 group-hover:scale-105" />
-                  ) : (
-                    <div
-                      className="w-14 h-14 rounded-full shrink-0 flex items-center justify-center font-serif font-bold text-[20px]"
-                      style={{
-                        background: 'radial-gradient(ellipse at 25% 75%, oklch(68% .10 300), oklch(84% .14 82))',
-                        color:      'oklch(94% 0.008 75)',
-                      }}
-                    >
-                      {a.name[0]?.toUpperCase()}
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-32 gap-3 text-ink3">
+              <span className="text-[48px] opacity-10 font-serif">◇</span>
+              <span className="text-[14px]">No hay artistas que coincidan</span>
+              <button onClick={() => setSearch('')}
+                className="text-[12px] text-gold border-b border-gold mt-1">
+                Limpiar búsqueda
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+              {filtered.map((a, i) => (
+                <div
+                  key={a.id}
+                  className={`bg-bg flex flex-col group reveal relative transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_48px_oklch(0%_0_0/0.12)] ${i > 0 && i < 4 ? `rd${i}` : ''}`}
+                  style={{ boxShadow: '0 2px 8px oklch(0% 0 0 / 0.06)' }}
+                >
+                  <Link href={`/artists/${a.id}`} className="absolute inset-0 z-1" aria-label={`Ver perfil de ${a.name}`} />
+
+                  {/* Avatar con marco oscuro */}
+                  <div className="px-7 pt-8 pb-5 flex items-start gap-5">
+                    <div className="relative shrink-0">
+                      <div className="p-1.5 rounded-full" style={{ background: 'oklch(13% 0.010 75)' }}>
+                        <div className="w-16 h-16 rounded-full overflow-hidden ring-1 ring-[oklch(65%_0.130_82/0.45)] group-hover:ring-[oklch(65%_0.130_82/0.9)] transition-all duration-500">
+                          <ArtistAvatar url={a.avatarUrl} name={a.name} size={64} />
+                        </div>
+                      </div>
+                      <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[8px]"
+                        style={{ background: 'oklch(13% 0.010 75)', color: 'oklch(65% 0.130 82)', border: '1px solid oklch(65% 0.130 82 / 0.4)' }}>
+                        ◆
+                      </span>
                     </div>
+                    <div className="flex flex-col gap-1.5 min-w-0 pt-1">
+                      <h3 className="font-serif text-[20px] font-bold leading-tight group-hover:text-gold transition-colors duration-300">
+                        {a.name}
+                      </h3>
+                      <div className="flex items-center gap-2 text-[11px] text-ink3">
+                        <span>{a.artworkCount} obra{a.artworkCount !== 1 ? 's' : ''}</span>
+                        <span className="text-(--border-md)">·</span>
+                        <span>{a.galleryCount} galería{a.galleryCount !== 1 ? 's' : ''}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bio */}
+                  {a.bio && (
+                    <p className="px-7 pb-5 text-[13px] text-ink3 leading-relaxed line-clamp-3 border-b border-(--border)">
+                      {a.bio}
+                    </p>
                   )}
-                  <div className="flex flex-col gap-1 min-w-0">
-                    <h3 className="font-serif text-[19px] font-bold leading-tight group-hover:text-gold transition-colors">
-                      {a.name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-[11px] text-ink3">
-                      <span>{a.artworkCount} obra{a.artworkCount !== 1 ? 's' : ''}</span>
-                      <span className="text-(--border-md)">·</span>
-                      <span>{a.galleryCount} galería{a.galleryCount !== 1 ? 's' : ''}</span>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Bio */}
-                {a.bio && (
-                  <p className="px-6 pb-5 text-[13px] text-ink3 leading-relaxed line-clamp-3 border-b border-(--border)">
-                    {a.bio}
-                  </p>
-                )}
-
-                {/* Footer: galería + acción */}
-                <div className="px-6 py-4 flex items-center justify-between mt-auto">
-                  {a.primaryGallery ? (
-                    <span
-                      onClick={e => { e.preventDefault(); e.stopPropagation(); router.push(`/galleries/${a.primaryGallery!.slug}`) }}
-                      className="cursor-pointer text-[11px] tracking-[0.8px] text-gold border border-[oklch(60%_0.130_82/0.25)] px-2 py-1 rounded-xs hover:bg-(--gold-dim) transition-colors"
-                    >
-                      ◇ {a.primaryGallery.name}
+                  {/* Footer */}
+                  <div className="px-7 py-4 flex items-center justify-between mt-auto relative z-2">
+                    {a.primaryGallery ? (
+                      <Link
+                        href={`/galleries/${a.primaryGallery.slug}`}
+                        className="text-[11px] tracking-[0.8px] text-gold border border-[oklch(60%_0.130_82/0.25)] px-2 py-1 rounded-xs hover:bg-(--gold-dim) transition-colors"
+                      >
+                        ◇ {a.primaryGallery.name}
+                      </Link>
+                    ) : (
+                      <span />
+                    )}
+                    <span className="text-[12px] text-ink3 group-hover:text-gold transition-colors duration-300 shrink-0">
+                      Ver perfil →
                     </span>
-                  ) : (
-                    <span />
-                  )}
-                  <span className="text-[12px] text-ink3 group-hover:text-gold transition-colors shrink-0">
-                    Ver perfil →
-                  </span>
+                  </div>
                 </div>
-              </Link>
-            ))
-        }
-
-        {!loading && filtered.length === 0 && (
-          <div className="col-span-full bg-bg flex flex-col items-center justify-center py-24 gap-3 text-ink3">
-            <span className="text-[40px] opacity-15">◇</span>
-            <span className="text-[14px]">No hay artistas que coincidan</span>
-            <button onClick={() => setSearch('')}
-              className="text-[12px] text-gold border-b border-gold mt-1">
-              Limpiar búsqueda
-            </button>
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </>
   )
 }

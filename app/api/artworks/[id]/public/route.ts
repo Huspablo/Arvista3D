@@ -24,8 +24,5 @@ export async function GET(_req: Request, { params }: Params) {
 
   if (!artwork) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  // Incrementar vistas sin bloquear la respuesta
-  db.artwork.update({ where: { id }, data: { viewCount: { increment: 1 } } }).catch(() => null)
-
   return NextResponse.json(artwork)
 }

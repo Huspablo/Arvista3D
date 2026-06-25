@@ -40,6 +40,12 @@ export function GalleryCanvas({ manifest, galleryId, isOwner }: Props) {
   const [saveError,  setSaveError] = useState('')
   const updateGallery = useUpdateGallery()
 
+  useEffect(() => {
+    if (!saveError) return
+    const t = setTimeout(() => setSaveError(''), 5000)
+    return () => clearTimeout(t)
+  }, [saveError])
+
   // Track the last-persisted config so isDirty reflects actual unsaved changes
   const [savedConfig, setSavedConfig] = useState({
     wallColor:     manifest.gallery.config.wallColor     ?? DEFAULT_SCENE_PARAMS.wallColor,

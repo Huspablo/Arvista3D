@@ -1,36 +1,56 @@
-# Dependencies
+# ── Dependencias ─────────────────────────────────────────────────────────────
 node_modules/
 
-# Next.js
+# ── Next.js ───────────────────────────────────────────────────────────────────
 .next/
 out/
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Build
-dist/
-build/
-
-# TypeScript
-*.tsbuildinfo
 next-env.d.ts
 
-# Editor
-.vscode/
-.idea/
+# ── Vercel ────────────────────────────────────────────────────────────────────
+.vercel/
 
-# OS
-.DS_Store
-Thumbs.db
+# ── Variables de entorno ──────────────────────────────────────────────────────
+# Nunca subir ficheros con secretos reales
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+# Sí se puede subir el ejemplo sin valores reales
+# .env.example  ← permitido
 
-# Logs
-*.log
+# ── Build / compilación ───────────────────────────────────────────────────────
+dist/
+build/
+*.tsbuildinfo
 
-# clerk configuration (can include secrets)
+# ── Tests ─────────────────────────────────────────────────────────────────────
+coverage/
+
+# ── Documentación interna (TFG, notas de desarrollo) ─────────────────────────
+docs/
+
+# ── Clerk ─────────────────────────────────────────────────────────────────────
+# Puede contener tokens y configuración local de desarrollo
 /.clerk/
 
-# Claude Code (AI assistant memory — personal por desarrollador)
+# ── Claude Code (memoria personal del asistente) ─────────────────────────────
 .claude/
+
+# ── Editores ─────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── Sistema operativo ─────────────────────────────────────────────────────────
+**/.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCreateGallery } from '@/lib/hooks/use-galleries'
+import { toSlug } from '@/lib/utils/slug'
 
 // ── Plantillas ────────────────────────────────────────────────────────────────
 
@@ -110,15 +111,6 @@ const MINI_PLANS = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function slugify(s: string) {
-  return s
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-}
-
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-4 mb-6">
@@ -151,7 +143,7 @@ export function NewGalleryForm() {
     setApiError('')
 
     createGallery.mutate(
-      { name: name.trim(), description: description.trim() || undefined, visibility },
+      { name: name.trim(), description: description.trim() || undefined, visibility, templateKey: template },
       {
         onSuccess: () => router.push('/dashboard/galleries'),
         onError:   (err) => setApiError(err.message),
@@ -248,7 +240,7 @@ export function NewGalleryForm() {
           <div className="flex items-end border-b border-(--border) pb-3">
             <span className="text-[13px] text-ink3 shrink-0 pb-px">arvista.art/galleries/</span>
             <span className="text-[15px] text-ink font-medium min-w-15">
-              {slugify(name) || <span className="text-ink3 font-normal italic">mi-galeria</span>}
+              {toSlug(name) || <span className="text-ink3 font-normal italic">mi-galeria</span>}
             </span>
           </div>
           <p className="text-[11px] text-ink3 mt-2 opacity-60">Generado a partir del nombre.</p>

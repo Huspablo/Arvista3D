@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback } from 'react'
 
@@ -42,7 +43,7 @@ function ArtworkCard({
       }}
     >
       {a.thumbnail
-        ? <img src={a.thumbnail} alt={a.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" /> // eslint-disable-line
+        ? <Image src={a.thumbnail} alt={a.title} fill sizes="(max-width: 768px) 50vw, 600px" className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
         : <div className="w-full h-full flex items-center justify-center"><span className="font-serif text-[40px] opacity-10">◇</span></div>
       }
       <div
@@ -116,7 +117,7 @@ export function GalleryMasonry({ artworks }: Props) {
               className="aspect-4/3 relative overflow-hidden border border-(--border) no-underline group bg-bg2"
             >
               {a.thumbnail
-                ? <img src={a.thumbnail} alt={a.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" /> // eslint-disable-line
+                ? <Image src={a.thumbnail} alt={a.title} fill sizes="(max-width: 768px) 50vw, 600px" className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
                 : <div className="w-full h-full flex items-center justify-center"><span className="font-serif text-[28px] opacity-10">◇</span></div>
               }
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex flex-col justify-end p-4" style={{ background: HOVER_OVERLAY }}>
@@ -142,7 +143,7 @@ export function GalleryMasonry({ artworks }: Props) {
             className="aspect-4/3 relative overflow-hidden border border-(--border) no-underline group bg-bg2"
           >
             {a.thumbnail
-              ? <img src={a.thumbnail} alt={a.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]" /> // eslint-disable-line
+              ? <Image src={a.thumbnail} alt={a.title} fill sizes="(max-width: 768px) 50vw, 600px" className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
               : <div className="w-full h-full flex items-center justify-center"><span className="font-serif text-[28px] opacity-10">◇</span></div>
             }
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex flex-col justify-end p-4" style={{ background: HOVER_OVERLAY }}>

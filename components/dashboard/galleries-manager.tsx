@@ -23,6 +23,7 @@ export function GalleriesManager() {
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [isDeleting,   setIsDeleting]   = useState(false)
+  const [deleteError,  setDeleteError]  = useState('')
   const deleteDialogRef                 = useRef<HTMLDivElement>(null)
   useFocusTrap(deleteDialogRef, !!deleteTarget)
 
@@ -33,9 +34,10 @@ export function GalleriesManager() {
   const handleDeleteConfirm = () => {
     if (!deleteTarget) return
     setIsDeleting(true)
+    setDeleteError('')
     deleteGallery.mutate(deleteTarget.id, {
-      onSuccess: () => { setDeleteTarget(null); setIsDeleting(false) },
-      onError:   () => setIsDeleting(false),
+      onSuccess: () => { setDeleteTarget(null); setIsDeleting(false); setDeleteError('') },
+      onError:   (err) => { setIsDeleting(false); setDeleteError(err.message) },
     })
   }
 
@@ -59,9 +61,12 @@ export function GalleriesManager() {
               <span className="shrink-0 mt-px">⚠</span>
               <span>Esta acción no se puede deshacer. Las obras expuestas en esta galería pasarán a estado borrador.</span>
             </div>
+            {deleteError && (
+              <p className="text-[12px] text-warn mb-5">{deleteError}</p>
+            )}
             <div className="flex gap-3 justify-end">
               <button
-                onClick={() => setDeleteTarget(null)}
+                onClick={() => { setDeleteTarget(null); setDeleteError('') }}
                 disabled={isDeleting}
                 className="text-[13px] px-5 py-2.5 border border-(--border) rounded-xs text-ink3 hover:border-(--border-md) hover:text-ink transition-all disabled:opacity-50"
               >

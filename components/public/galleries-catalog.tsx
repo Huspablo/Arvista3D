@@ -2,6 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
+import { ArtistAvatar } from '@/components/ui/artist-avatar'
+import { GalleryPreviewMosaic } from '@/components/ui/gallery-preview-mosaic'
+import { FrameCorners } from '@/components/ui/frame-corners'
 
 interface PublicGallery {
   id:            string
@@ -16,18 +19,25 @@ interface PublicGallery {
 
 const SORTS = ['Más recientes', 'Más antiguas', 'A–Z', 'Z–A'] as const
 
+const ASPECT_CYCLE = ['aspect-4/3', 'aspect-3/2', 'aspect-4/3', 'aspect-square', 'aspect-3/2', 'aspect-4/3']
+
 export function GalleriesCatalog() {
   const [galleries, setGalleries] = useState<PublicGallery[]>([])
   const [loading,   setLoading]   = useState(true)
+  const [error,     setError]     = useState('')
   const [sort,      setSort]      = useState('Más recientes')
   const [search,    setSearch]    = useState('')
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true)
+    setError('')
     fetch('/api/galleries/public')
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error('Error del servidor'); return r.json() })
       .then(data => { setGalleries(data); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [])
+      .catch(() => { setError('No se pudieron cargar las galerías. Comprueba tu conexión.'); setLoading(false) })
+  }
+
+  useEffect(() => { load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
     let list = galleries.filter(g => {
@@ -74,77 +84,81 @@ export function GalleriesCatalog() {
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="px-15 py-10 grid gap-px bg-(--border) max-md:px-0"
-        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
-        {loading
-          ? [1,2,3,4,5,6].map(i => (
-              <div key={i} className="bg-bg">
-                <div className="w-full bg-bg2 animate-pulse" style={{ aspectRatio: '3/2' }} />
-                <div className="px-5 py-5 border-t border-(--border) space-y-2.5">
-                  <div className="h-5 bg-bg2 rounded animate-pulse w-2/3" />
-                  <div className="h-3 bg-bg2 rounded animate-pulse w-1/2" />
-                  <div className="h-3 bg-bg2 rounded animate-pulse w-1/3" />
-                </div>
-              </div>
-            ))
-          : filtered.map((g, i) => (
-              <Link key={g.id} href={`/galleries/${g.slug}`}
-                className={`bg-bg no-underline flex flex-col group reveal ${i > 0 && i < 4 ? `rd${i}` : ''}`}>
-                {/* Preview mosaico */}
-                <div className="relative overflow-hidden" style={{ aspectRatio: '3/2' }}>
-                  {g.previewImages.length > 0 ? (
-                    <div className={`w-full h-full grid gap-px ${g.previewImages.length >= 3 ? 'grid-cols-3' : g.previewImages.length === 2 ? 'grid-cols-2' : ''}`}>
-                      {(g.previewImages.length >= 3 ? g.previewImages.slice(0, 3) : g.previewImages).map((src, idx) => (
-                        <img key={idx} src={src} alt="" // eslint-disable-line
-                          className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.04]" />
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="w-full h-full bg-bg2 flex items-center justify-center">
-                      <span className="font-serif text-[48px] opacity-10">◇</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex flex-col justify-end p-5"
-                    style={{ background: 'linear-gradient(to top, oklch(97.5% 0.007 75 / .92) 0%, transparent 55%)' }}>
-                    <span className="inline-flex items-center gap-2 text-[12px] tracking-[2px] uppercase text-gold font-medium">Visitar galería →</span>
-                  </div>
-                </div>
+      {/* Error */}
+      {error && (
+        <div className="px-15 py-16 flex flex-col items-center gap-4 text-center max-md:px-6">
+          <span className="text-[13px] text-ink3">{error}</span>
+          <button onClick={load} className="text-[12px] text-gold border-b border-gold">Reintentar</button>
+        </div>
+      )}
 
-                {/* Info */}
-                <div className="px-5 py-5 border-t border-(--border) flex-1 flex flex-col gap-2">
-                  <h3 className="font-serif text-[20px] font-bold leading-tight">{g.name}</h3>
-                  {g.description && (
-                    <p className="text-[13px] text-ink3 leading-snug line-clamp-2">{g.description}</p>
-                  )}
-                  <div className="flex items-center gap-2 mt-auto pt-2 border-t border-(--border)">
-                    {g.artist.avatarUrl ? (
-                      <img src={g.artist.avatarUrl} alt={g.artist.name} // eslint-disable-line
-                        className="w-6 h-6 rounded-full object-cover shrink-0" />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-bg3 flex items-center justify-center shrink-0">
-                        <span className="text-[10px] text-ink3">{g.artist.name[0]?.toUpperCase()}</span>
+      {/* Masonry */}
+      {!error && (
+        <div className="px-10 py-10 max-md:px-4 max-md:py-6">
+          {loading ? (
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-5">
+              {[1,2,3,4,5,6].map((i) => (
+                <div key={i} className={`break-inside-avoid mb-5 bg-bg border border-(--border) overflow-hidden ${ASPECT_CYCLE[i % ASPECT_CYCLE.length]}`}>
+                  <div className="w-full h-full bg-bg3 animate-pulse" />
+                </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-32 gap-3 text-ink3">
+              <span className="text-[48px] opacity-10 font-serif">◇</span>
+              <span className="text-[14px]">No hay galerías que coincidan</span>
+              <button onClick={() => setSearch('')}
+                className="text-[12px] text-gold border-b border-gold mt-1">
+                Limpiar búsqueda
+              </button>
+            </div>
+          ) : (
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-5">
+              {filtered.map((g, i) => {
+                const aspect = ASPECT_CYCLE[i % ASPECT_CYCLE.length]
+                return (
+                  <div
+                    key={g.id}
+                    className={`break-inside-avoid mb-5 bg-bg group reveal relative transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_48px_oklch(0%_0_0/0.12)] ${i > 0 && i < 4 ? `rd${i}` : ''}`}
+                    style={{ boxShadow: '0 2px 8px oklch(0% 0 0 / 0.06)' }}
+                  >
+                    <Link href={`/galleries/${g.slug}`} className="absolute inset-0 z-1" aria-label={g.name} />
+
+                    {/* Framed mosaic */}
+                    <div className="p-2.5" style={{ background: 'oklch(13% 0.010 75)' }}>
+                      <div className={`relative overflow-hidden ${aspect}`}>
+                        <GalleryPreviewMosaic images={g.previewImages} />
+                        <div
+                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex flex-col justify-end p-4 z-20"
+                          style={{ background: 'linear-gradient(to top, oklch(10% 0.010 75 / .85) 0%, transparent 55%)' }}
+                        >
+                          <span className="text-[11px] tracking-[3px] uppercase text-gold font-medium">Visitar galería →</span>
+                        </div>
+                        <FrameCorners size={28} opacity={0.65} />
                       </div>
-                    )}
-                    <span className="text-[12px] text-ink3">{g.artist.name}</span>
-                    <span className="ml-auto text-[11px] text-ink3">{g.exposedCount} obra{g.exposedCount !== 1 ? 's' : ''}</span>
-                  </div>
-                </div>
-              </Link>
-            ))
-        }
+                    </div>
 
-        {!loading && filtered.length === 0 && (
-          <div className="col-span-full bg-bg flex flex-col items-center justify-center py-24 gap-3 text-ink3">
-            <span className="text-[40px] opacity-15">◇</span>
-            <span className="text-[14px]">No hay galerías que coincidan</span>
-            <button onClick={() => setSearch('')}
-              className="text-[12px] text-gold border-b border-gold mt-1">
-              Limpiar búsqueda
-            </button>
-          </div>
-        )}
-      </div>
+                    {/* Info */}
+                    <div className="px-5 py-5 relative z-2 flex flex-col gap-2">
+                      <h3 className="font-serif text-[19px] font-bold leading-tight">{g.name}</h3>
+                      {g.description && (
+                        <p className="text-[13px] text-ink3 leading-snug line-clamp-2">{g.description}</p>
+                      )}
+                      <div className="flex items-center gap-2 mt-2 pt-3 border-t border-(--border)">
+                        <div className="w-6 h-6 rounded-full shrink-0 overflow-hidden">
+                          <ArtistAvatar url={g.artist.avatarUrl} name={g.artist.name} size={24} />
+                        </div>
+                        <span className="text-[12px] text-ink3">{g.artist.name}</span>
+                        <span className="ml-auto text-[11px] text-ink3 shrink-0">{g.exposedCount} obra{g.exposedCount !== 1 ? 's' : ''}</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </>
   )
 }

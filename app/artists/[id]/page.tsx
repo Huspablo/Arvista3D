@@ -3,6 +3,8 @@ import Link           from 'next/link'
 import { Nav }        from '@/components/layout/nav'
 import { Footer }     from '@/components/layout/footer'
 import { ScrollReveal } from '@/components/ui/scroll-reveal'
+import { ArtistAvatar } from '@/components/ui/artist-avatar'
+import { GalleryPreviewMosaic } from '@/components/ui/gallery-preview-mosaic'
 import { db }         from '@/lib/db'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -53,7 +55,6 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
   if (!artist) notFound()
   if (artist.galleries.length === 0) notFound()
 
-  const initials = artist.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase() || '?'
   const memberYear = new Date(artist.createdAt).getFullYear()
 
   return (
@@ -72,20 +73,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                 className="w-28 h-28 rounded-full shrink-0 overflow-hidden border-[3px] border-(--border-md) reveal"
                 style={{ minWidth: '112px' }}
               >
-                {artist.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={artist.avatarUrl} alt={artist.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center font-serif font-bold text-[32px]"
-                    style={{
-                      background: 'radial-gradient(ellipse at 25% 75%, oklch(68% .10 300), oklch(84% .14 82))',
-                      color:      'oklch(94% 0.008 75)',
-                    }}
-                  >
-                    {initials}
-                  </div>
-                )}
+                <ArtistAvatar url={artist.avatarUrl} name={artist.name} size={112} />
               </div>
 
               {/* Info */}
@@ -166,19 +154,7 @@ export default async function ArtistProfilePage({ params }: { params: Promise<{ 
                   className={`bg-bg no-underline flex flex-col group reveal ${i > 0 && i < 4 ? `rd${i}` : ''}`}>
                   {/* Preview */}
                   <div className="relative overflow-hidden" style={{ aspectRatio: '3/2' }}>
-                    {previews.length > 0 ? (
-                      <div className={`w-full h-full grid gap-px ${previews.length >= 3 ? 'grid-cols-3' : previews.length === 2 ? 'grid-cols-2' : ''}`}>
-                        {(previews.length >= 3 ? previews.slice(0, 3) : previews).map((src, idx) => (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img key={idx} src={src} alt=""
-                            className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.04]" />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="w-full h-full bg-bg2 flex items-center justify-center">
-                        <span className="font-serif text-[48px] opacity-10">◇</span>
-                      </div>
-                    )}
+                    <GalleryPreviewMosaic images={previews} />
                     <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex flex-col justify-end p-5"
                       style={{ background: 'linear-gradient(to top, oklch(97.5% 0.007 75 / .92) 0%, transparent 55%)' }}>
                       <span className="inline-flex items-center gap-2 text-[12px] tracking-[2px] uppercase text-gold font-medium">Visitar galería →</span>

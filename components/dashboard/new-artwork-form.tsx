@@ -281,7 +281,7 @@ export function NewArtworkForm() {
                   type="number"
                   value={year}
                   onChange={e => { setYear(e.target.value); setErrors(p => ({ ...p, year: undefined })) }}
-                  min="1900"
+                  min="1000"
                   max={new Date().getFullYear()}
                   className={`${inputCls} ${errors.year ? 'border-warn' : ''}`}
                 />

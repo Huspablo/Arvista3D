@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ArtistAvatar } from '@/components/ui/artist-avatar'
 
 interface Props {
   artistId:     string
@@ -11,8 +12,6 @@ interface Props {
 }
 
 export function ArtistBar({ artistId, name, bio, avatarUrl, website, artworkCount, memberSince }: Props) {
-  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
-
   return (
     <section id="artist" className="bg-ink py-15 px-15 max-md:px-6">
       <div className="max-w-370 mx-auto flex items-center gap-10 max-md:flex-col max-md:items-start">
@@ -22,20 +21,7 @@ export function ArtistBar({ artistId, name, bio, avatarUrl, website, artworkCoun
           className="w-20 h-20 rounded-full shrink-0 border-[3px] overflow-hidden flex items-center justify-center"
           style={{ borderColor: 'oklch(100% 0 0 / .15)' }}
         >
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
-          ) : (
-            <div
-              className="w-full h-full flex items-center justify-center font-serif font-bold text-[22px]"
-              style={{
-                background: 'radial-gradient(ellipse at 25% 75%, oklch(68% .10 300), oklch(84% .14 82))',
-                color:      'oklch(94% 0.008 75)',
-              }}
-            >
-              {initials}
-            </div>
-          )}
+          <ArtistAvatar url={avatarUrl} name={name} size={80} />
         </div>
 
         {/* Info */}

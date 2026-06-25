@@ -1,6 +1,8 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { db } from '@/lib/db'
 import { TYPE_LABEL } from '@/lib/labels'
+import { FrameCorners } from '@/components/ui/frame-corners'
 
 export async function TopArtworks() {
   const artworks = await db.artwork.findMany({
@@ -40,36 +42,39 @@ export async function TopArtworks() {
           </a>
         </div>
 
-        <div className="grid gap-px bg-(--border)"
-          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
           {artworks.map((a, i) => (
             <Link key={a.id} href={`/artworks/${a.id}`}
-              className={`bg-bg no-underline flex flex-col group reveal ${i < 3 ? `rd${i + 1}` : ''}`}>
-              {/* Imagen */}
-              <div className="relative overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                {a.assetThumbnail ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={a.assetThumbnail} alt={a.title}
-                    className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.05]" />
-                ) : (
-                  <div className="w-full h-full bg-bg3 flex items-center justify-center">
-                    <span className="font-serif text-[36px] opacity-10">◇</span>
+              className={`bg-bg no-underline flex flex-col group reveal transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_48px_oklch(0%_0_0/0.12)] ${i < 3 ? `rd${i + 1}` : ''}`}
+              style={{ boxShadow: '0 2px 8px oklch(0% 0 0 / 0.06)' }}>
+              {/* Framed image */}
+              <div className="p-2" style={{ background: 'oklch(13% 0.010 75)' }}>
+                <div className="relative overflow-hidden aspect-4/3">
+                  {a.assetThumbnail ? (
+                    <Image src={a.assetThumbnail} alt={a.title} fill
+                      sizes="(max-width: 768px) 100vw, 300px"
+                      className="object-cover transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.04]" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center" style={{ background: 'oklch(18% 0.010 75)' }}>
+                      <span className="font-serif text-[36px] opacity-10 text-[oklch(80%_0.05_75)]">◇</span>
+                    </div>
+                  )}
+                  {/* Badge de vistas */}
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-xs text-[11px] font-medium z-20"
+                    style={{ background: 'oklch(14% 0.010 75 / 0.82)', backdropFilter: 'blur(8px)', color: 'oklch(94% 0.008 75)' }}>
+                    <span className="opacity-60">◉</span>
+                    {a.viewCount.toLocaleString('es')}
                   </div>
-                )}
-                {/* Badge de vistas */}
-                <div className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-xs text-[11px] font-medium"
-                  style={{ background: 'oklch(14% 0.010 75 / 0.82)', backdropFilter: 'blur(8px)', color: 'oklch(94% 0.008 75)' }}>
-                  <span className="opacity-60">◉</span>
-                  {a.viewCount.toLocaleString('es')}
-                </div>
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex flex-col justify-end p-4"
-                  style={{ background: 'linear-gradient(to top, oklch(97.5% 0.007 75 / .9) 0%, transparent 55%)' }}>
-                  <span className="text-[12px] tracking-[2px] uppercase text-gold font-medium">Ver obra →</span>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex flex-col justify-end p-4 z-20"
+                    style={{ background: 'linear-gradient(to top, oklch(10% 0.010 75 / .85) 0%, transparent 55%)' }}>
+                    <span className="text-[11px] tracking-[3px] uppercase text-gold font-medium">Ver obra →</span>
+                  </div>
+                  <FrameCorners size={24} opacity={0.65} />
                 </div>
               </div>
 
               {/* Info */}
-              <div className="px-4 py-4 border-t border-(--border)">
+              <div className="px-4 py-4">
                 <h3 className="font-serif text-[17px] font-bold leading-tight mb-1">{a.title}</h3>
                 <div className="flex items-center gap-1.5 text-[11px] text-ink3">
                   <span className="tracking-[1.5px] uppercase">{TYPE_LABEL[a.type]}</span>

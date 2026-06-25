@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import type { ArtworkType } from '@prisma/client'
+import { TYPE_LABEL } from '@/lib/labels'
 
 type ShowcaseArtwork = {
   id:             string
@@ -58,13 +60,6 @@ export function ShowcaseGrid({ artworks }: { artworks: ShowcaseArtwork[] }) {
     return () => cleanup.forEach(fn => fn())
   }, [])
 
-  const TYPE_LABEL: Record<string, string> = {
-    PAINTING:    'Pintura',
-    SCULPTURE:   'Escultura',
-    PHOTOGRAPHY: 'Fotografía',
-    OTHER:       'Obra',
-  }
-
   return (
     <>
       {/* Mobile/tablet: simple responsive grid */}
@@ -91,7 +86,7 @@ export function ShowcaseGrid({ artworks }: { artworks: ShowcaseArtwork[] }) {
               <div className="absolute inset-0 bg-ink opacity-0 group-hover:opacity-40 transition-opacity duration-400" />
               <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-[cubic-bezier(.22,1,.36,1)]">
                 <p className="text-bg text-[10px] tracking-[2px] uppercase mb-0.5">
-                  {TYPE_LABEL[aw.type] ?? 'Obra'} · {aw.artist.name}
+                  {TYPE_LABEL[aw.type as ArtworkType] ?? 'Obra'} · {aw.artist.name}
                 </p>
                 <p className="text-bg font-serif text-[15px] font-bold leading-tight">{aw.title}</p>
               </div>
@@ -129,7 +124,7 @@ export function ShowcaseGrid({ artworks }: { artworks: ShowcaseArtwork[] }) {
               <div className="absolute inset-0 bg-ink opacity-0 group-hover:opacity-40 transition-opacity duration-400" />
               <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-400 ease-[cubic-bezier(.22,1,.36,1)]">
                 <p className="text-bg text-[11px] tracking-[2px] uppercase mb-1">
-                  {TYPE_LABEL[aw.type] ?? 'Obra'} · {aw.artist.name}
+                  {TYPE_LABEL[aw.type as ArtworkType] ?? 'Obra'} · {aw.artist.name}
                 </p>
                 <p className="text-bg font-serif text-[18px] font-bold leading-tight">{aw.title}</p>
               </div>

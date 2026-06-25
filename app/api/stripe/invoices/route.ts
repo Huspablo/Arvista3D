@@ -24,7 +24,8 @@ export async function GET() {
 
     return NextResponse.json(
       list.data.map(inv => {
-        const priceId  = inv.lines.data[0]?.price?.id ?? ''
+        const pricingRef = inv.lines.data[0]?.pricing?.price_details?.price
+        const priceId    = typeof pricingRef === 'string' ? pricingRef : (pricingRef?.id ?? '')
         const planEnum = PRICE_TO_PLAN[priceId] ?? 'BASIC'
         return {
           id:     inv.id,

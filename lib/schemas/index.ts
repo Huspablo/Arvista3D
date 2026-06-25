@@ -5,7 +5,7 @@ import { z } from 'zod'
 export const UpdateArtistSchema = z.object({
   name:      z.string().min(1).max(100).optional(),
   bio:       z.string().max(600).optional(),
-  website:   z.string().url().optional().or(z.literal('')),
+  website:   z.union([z.string().url(), z.literal(''), z.null()]).optional(),
   avatarUrl: z.string().url().optional().or(z.literal('')),
 })
 
@@ -15,6 +15,7 @@ export const CreateGallerySchema = z.object({
   name:        z.string().min(1, 'El nombre es obligatorio').max(80),
   description: z.string().max(400).optional(),
   visibility:  z.enum(['PUBLIC', 'PRIVATE']).optional(),
+  templateKey: z.string().optional(),
 })
 
 export const UpdateGallerySchema = z.object({

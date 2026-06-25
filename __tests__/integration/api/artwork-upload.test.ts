@@ -38,13 +38,15 @@ vi.mock('@/lib/inngest', () => ({
   inngest: { send: (...args: unknown[]) => mockInngestSend(...args) },
 }))
 
-// Mock de sharp — la ruta genera una miniatura síncrona; en tests usamos un buffer falso
+// Mock de sharp con variable hoisted para poder controlar toBuffer por test
+const mockSharpChain = vi.hoisted(() => ({
+  resize:   vi.fn().mockReturnThis(),
+  webp:     vi.fn().mockReturnThis(),
+  toBuffer: vi.fn().mockResolvedValue(Buffer.from('fake-webp')),
+}))
+
 vi.mock('sharp', () => ({
-  default: vi.fn().mockReturnValue({
-    resize:   vi.fn().mockReturnThis(),
-    webp:     vi.fn().mockReturnThis(),
-    toBuffer: vi.fn().mockResolvedValue(Buffer.from('fake-webp')),
-  }),
+  default: vi.fn(() => mockSharpChain),
 }))
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -74,6 +76,7 @@ describe('POST /api/assets/artwork-upload', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
+    mockSharpChain.toBuffer.mockResolvedValue(Buffer.from('fake-webp'))
     const mod = await import('@/app/api/assets/artwork-upload/route')
     POST = mod.POST
   })
@@ -137,6 +140,27 @@ describe('POST /api/assets/artwork-upload', () => {
     expect(res.status).toBe(403)
   })
 
+  it('devuelve 500 si Sharp lanza un error al procesar la imagen', async () => {
+    mockRequireArtist.mockResolvedValue({ artist: makeArtist(), error: null })
+    mockArtworkFindFirst.mockResolvedValue(makeArtwork())
+    mockR2Send.mockResolvedValue({}) // el upload del original tiene éxito
+    mockSharpChain.toBuffer.mockRejectedValue(new Error('Sharp: formato no soportado'))
+
+    const file = new File(['bad-img'], 'corrupt.jpg', { type: 'image/jpeg' })
+    const res  = await POST(await makeFormRequest(file))
+    expect(res.status).toBe(500)
+  })
+
+  it('devuelve 500 si R2 falla al subir el original', async () => {
+    mockRequireArtist.mockResolvedValue({ artist: makeArtist(), error: null })
+    mockArtworkFindFirst.mockResolvedValue(makeArtwork())
+    mockR2Send.mockRejectedValue(new Error('R2: connection timeout'))
+
+    const file = new File(['imgdata'], 'obra.png', { type: 'image/png' })
+    const res  = await POST(await makeFormRequest(file))
+    expect(res.status).toBe(500)
+  })
+
   it('sube original y miniatura a R2, actualiza BD con thumbnail y dispara Inngest — devuelve 200', async () => {
     mockRequireArtist.mockResolvedValue({ artist: makeArtist(), error: null })
     mockArtworkFindFirst.mockResolvedValue(makeArtwork())
@@ -151,15 +175,16 @@ describe('POST /api/assets/artwork-upload', () => {
     expect(res.status).toBe(200)
     expect(body.ok).toBe(true)
     expect(body.key).toMatch(/^artworks\/aw-1\/original\/\d+\.png$/)
-    // Dos llamadas a R2: una para el original, otra para la miniatura
-    expect(mockR2Send).toHaveBeenCalledTimes(2)
-    // La BD se actualiza con originalKey Y thumbnailUrl
+    // Tres llamadas a R2: original + thumbnail (400px) + gallery (1200px)
+    expect(mockR2Send).toHaveBeenCalledTimes(3)
+    // La BD se actualiza con originalKey, thumbnailUrl Y galleryUrl
     expect(mockArtworkUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'aw-1' },
         data:  expect.objectContaining({
           assetOriginalKey: expect.stringMatching(/^artworks\/aw-1\/original\/\d+\.png$/),
           assetThumbnail:   'https://cdn.test/artworks/aw-1/thumbnail.webp',
+          assetGallery:     'https://cdn.test/artworks/aw-1/gallery.webp',
         }),
       }),
     )

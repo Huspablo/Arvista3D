@@ -95,12 +95,15 @@ export function ArtworkWallSlot({ slot, position, rotation, isSelected, onClick 
   const onLeave = () => { setHovered(false); document.body.classList.remove('cursor-hover') }
 
   // Prefer gallery (1200px); fall back to thumbnail for artworks whose pipeline
-  // hasn't produced the gallery variant yet. R2 public buckets (*.r2.dev) serve
-  // Access-Control-Allow-Origin: * by default, so direct CDN URLs work in WebGL.
-  const rawUrl     = slot.artwork && 'gallery' in slot.artwork.assets
+  // hasn't produced the gallery variant yet. Images are proxied through
+  // /api/assets/texture so the response carries Access-Control-Allow-Origin: *
+  // (required by texImage2D — R2 CDN does not send CORS headers by default).
+  const rawUrl = slot.artwork && 'gallery' in slot.artwork.assets
     ? ((slot.artwork.assets as FlatAssets).gallery || (slot.artwork.assets as FlatAssets).thumbnail)
     : null
-  const galleryUrl = rawUrl || null   // coerce '' → null
+  const galleryUrl = rawUrl
+    ? `/api/assets/texture?url=${encodeURIComponent(rawUrl)}`
+    : null
 
   return (
     <group position={position} rotation={rotation}>

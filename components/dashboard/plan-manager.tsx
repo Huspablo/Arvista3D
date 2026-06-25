@@ -19,34 +19,26 @@ type Invoice = {
 const PLANS = [
   {
     key:      'basico',
+    planEnum: 'BASIC'    as const,
     label:    'Básico',
     price:    0,
     period:   'gratis',
-    galleries: 1,
-    artworks:  10,
-    viewer3d:  true,
-    analytics: false,
-    priority:  false,
     features: [
-      '1 galería pública',
-      'Hasta 10 obras por galería',
+      `${PLAN_LIMITS.BASIC.galleries} galería pública`,
+      `Hasta ${PLAN_LIMITS.BASIC.artworksPerGallery} obras por galería`,
       'Viewer 3D incluido',
       'Dominio arvista.art/galleries/…',
     ],
   },
   {
     key:      'estandar',
+    planEnum: 'STANDARD' as const,
     label:    'Estándar',
     price:    12,
     period:   '/ mes',
-    galleries: 2,
-    artworks:  20,
-    viewer3d:  true,
-    analytics: true,
-    priority:  false,
     features: [
-      '2 galerías públicas',
-      'Hasta 20 obras por galería',
+      `${PLAN_LIMITS.STANDARD.galleries} galerías públicas`,
+      `Hasta ${PLAN_LIMITS.STANDARD.artworksPerGallery} obras por galería`,
       'Viewer 3D incluido',
       'Analítica de visitas',
       'Eliminar marca de agua',
@@ -54,17 +46,13 @@ const PLANS = [
   },
   {
     key:      'premium',
+    planEnum: 'PREMIUM'  as const,
     label:    'Premium',
     price:    29,
     period:   '/ mes',
-    galleries: 3,
-    artworks:  50,
-    viewer3d:  true,
-    analytics: true,
-    priority:  true,
     features: [
-      '3 galerías públicas',
-      'Hasta 50 obras por galería',
+      `${PLAN_LIMITS.PREMIUM.galleries} galerías públicas`,
+      `Hasta ${PLAN_LIMITS.PREMIUM.artworksPerGallery} obras por galería`,
       'Viewer 3D incluido',
       'Analítica avanzada',
       'Soporte prioritario',
@@ -123,9 +111,12 @@ export function PlanManager() {
   const limits      = PLAN_LIMITS[planEnum]
   const currentPlan = PLANS.find(p => p.key === planKey)!
 
+  // La capacidad total de obras = galerías creadas × límite por galería.
+  // Con 0 galerías se usa 1 como mínimo para evitar división por cero en la barra.
+  const artworksMax = Math.max(galleries.length, 1) * limits.artworksPerGallery
   const usage = {
-    galleries: { used: galleries.length,                                    max: limits.galleries           },
-    artworks:  { used: artworks.filter(a => a.status === 'EXPOSED').length, max: limits.artworksPerGallery  },
+    galleries: { used: galleries.length,                                    max: limits.galleries },
+    artworks:  { used: artworks.filter(a => a.status === 'EXPOSED').length, max: artworksMax      },
   }
 
   return (

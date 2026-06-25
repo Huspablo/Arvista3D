@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useArtist } from '@/lib/hooks/use-artist'
+import { ArtistAvatar } from '@/components/ui/artist-avatar'
 
 interface TopbarProps {
   title: string
@@ -27,11 +28,7 @@ export function Topbar({ title, actions }: TopbarProps) {
           title="Mi perfil"
           className="w-9 h-9 rounded-full border-2 border-(--border-md) shrink-0 overflow-hidden hover:border-gold transition-colors no-underline"
         >
-          {artist?.avatarUrl
-            ? /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={artist.avatarUrl} alt="" className="w-full h-full object-cover" />
-            : <div className="w-full h-full art-p1" />
-          }
+          {artist && <ArtistAvatar url={artist.avatarUrl} name={artist.name} size={36} />}
         </Link>
       </div>
     </div>

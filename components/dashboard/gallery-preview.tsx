@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 interface Props {
   images:       string[]
   wallColor?:   string | null
@@ -36,8 +38,7 @@ export function GalleryPreview({ images, wallColor, gradientH = 'h-10' }: Props)
   if (images.length === 1) {
     return (
       <>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={images[0]} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <Image src={images[0]} alt="" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
         <div className={`absolute inset-x-0 bottom-0 ${gradientH} bg-linear-to-t from-ink/20 to-transparent`} />
       </>
     )
@@ -48,14 +49,17 @@ export function GalleryPreview({ images, wallColor, gradientH = 'h-10' }: Props)
       className="absolute inset-0 grid gap-px bg-bg3"
       style={{ gridTemplateColumns: '3fr 2fr' }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={images[0]} alt="" className="w-full h-full object-cover" />
+      <div className="relative overflow-hidden">
+        <Image src={images[0]} alt="" fill sizes="240px" className="object-cover" />
+      </div>
       <div className="flex flex-col gap-px">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={images[1]} alt="" className="w-full flex-1 object-cover min-h-0" />
+        <div className="relative overflow-hidden flex-1 min-h-0">
+          <Image src={images[1]} alt="" fill sizes="160px" className="object-cover" />
+        </div>
         {images[2] && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={images[2]} alt="" className="w-full flex-1 object-cover min-h-0" />
+          <div className="relative overflow-hidden flex-1 min-h-0">
+            <Image src={images[2]} alt="" fill sizes="160px" className="object-cover" />
+          </div>
         )}
       </div>
     </div>

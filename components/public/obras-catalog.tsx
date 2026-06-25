@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
 import type { ArtworkType } from '@prisma/client'
 import { TYPE_LABEL } from '@/lib/labels'
+import { FrameCorners } from '@/components/ui/frame-corners'
 
 interface PublicArtwork {
   id:            string
@@ -22,20 +23,27 @@ const TYPE_MAP: Record<string, ArtworkType> = {
 }
 const SORTS = ['Más recientes', 'Más antiguas', 'A–Z', 'Z–A'] as const
 
+// Rotate aspect ratios so the masonry has visual rhythm
+const ASPECT_CYCLE = ['aspect-4/3', 'aspect-3/4', 'aspect-4/3', 'aspect-square', 'aspect-3/4', 'aspect-4/3']
+
 export function ObrasCatalog() {
-  const router = useRouter()
   const [artworks,  setArtworks]  = useState<PublicArtwork[]>([])
   const [loading,   setLoading]   = useState(true)
+  const [error,     setError]     = useState('')
   const [filter,    setFilter]    = useState('Todas')
   const [sort,      setSort]      = useState('Más recientes')
   const [search,    setSearch]    = useState('')
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true)
+    setError('')
     fetch('/api/artworks/public')
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error('Error del servidor'); return r.json() })
       .then(data => { setArtworks(data); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [])
+      .catch(() => { setError('No se pudieron cargar las obras. Comprueba tu conexión.'); setLoading(false) })
+  }
+
+  useEffect(() => { load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
     let list = artworks.filter(a => {
@@ -93,71 +101,106 @@ export function ObrasCatalog() {
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="px-15 py-10 grid gap-px bg-(--border) max-md:px-0"
-        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))' }}>
-        {loading
-          ? [1,2,3,4,5,6].map(i => (
-              <div key={i} className="bg-bg">
-                <div className="w-full bg-bg2 animate-pulse" style={{ aspectRatio: '4/3' }} />
-                <div className="px-5 py-4 border-t border-(--border) space-y-2">
-                  <div className="h-5 bg-bg2 rounded animate-pulse w-3/4" />
-                  <div className="h-3 bg-bg2 rounded animate-pulse w-1/2" />
-                </div>
-              </div>
-            ))
-          : filtered.map((a, i) => (
-              <Link key={a.id} href={`/artworks/${a.id}`}
-                className={`bg-bg no-underline flex flex-col group reveal ${i > 0 && i < 4 ? `rd${i}` : ''}`}>
-                <div className="relative overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                  {a.assetThumbnail ? (
-                    <img src={a.assetThumbnail} alt={a.title} // eslint-disable-line
-                      className="w-full h-full object-cover transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.05]" />
-                  ) : (
-                    <div className="w-full h-full bg-bg2 flex items-center justify-center">
-                      <span className="font-serif text-[36px] opacity-10">◇</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex flex-col justify-end p-5"
-                    style={{ background: 'linear-gradient(to top, oklch(97.5% 0.007 75 / .92) 0%, transparent 55%)' }}>
-                    <span className="inline-flex items-center gap-2 text-[12px] tracking-[2px] uppercase text-gold font-medium">Ver obra →</span>
-                  </div>
-                </div>
-                <div className="px-5 py-4 border-t border-(--border)">
-                  <h3 className="font-serif text-[18px] font-bold leading-tight mb-1">{a.title}</h3>
-                  <div className="flex items-center gap-1.5 text-[11px] text-ink3 flex-wrap">
-                    <span className="tracking-[1.5px] uppercase">{TYPE_LABEL[a.type]}</span>
-                    <span className="text-(--border-md)">·</span>
-                    <span
-                      onClick={e => { e.preventDefault(); e.stopPropagation(); router.push(`/artists/${a.artist.id}`) }}
-                      className="cursor-pointer text-ink3 hover:text-ink transition-colors border-b border-transparent hover:border-(--border-md)">
-                      {a.artist.name}
-                    </span>
-                    {a.year && <><span className="text-(--border-md)">·</span><span>{a.year}</span></>}
-                  </div>
-                  {a.slot?.gallery && (
-                    <div className="mt-1.5">
-                      <span className="text-[10px] tracking-[0.8px] text-gold border border-[oklch(60%_0.130_82/0.25)] px-1.5 py-0.5 rounded-xs">
-                        ◇ {a.slot.gallery.name}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </Link>
-            ))
-        }
+      {/* Error */}
+      {error && (
+        <div className="px-15 py-16 flex flex-col items-center gap-4 text-center max-md:px-6">
+          <span className="text-[13px] text-ink3">{error}</span>
+          <button onClick={load} className="text-[12px] text-gold border-b border-gold">Reintentar</button>
+        </div>
+      )}
 
-        {!loading && filtered.length === 0 && (
-          <div className="col-span-full bg-bg flex flex-col items-center justify-center py-24 gap-3 text-ink3">
-            <span className="text-[40px] opacity-15">◇</span>
-            <span className="text-[14px]">No hay obras que coincidan</span>
-            <button onClick={() => { setFilter('Todas'); setSearch('') }}
-              className="text-[12px] text-gold border-b border-gold mt-1">
-              Limpiar filtros
-            </button>
-          </div>
-        )}
-      </div>
+      {/* Masonry */}
+      {!error && (
+        <div className="px-10 py-10 max-md:px-4 max-md:py-6">
+          {loading ? (
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-5">
+              {[1,2,3,4,5,6].map((i) => (
+                <div key={i} className={`break-inside-avoid mb-5 bg-bg border border-(--border) overflow-hidden ${ASPECT_CYCLE[i % ASPECT_CYCLE.length]}`}>
+                  <div className="w-full h-full bg-bg3 animate-pulse" />
+                </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-32 gap-3 text-ink3">
+              <span className="text-[48px] opacity-10 font-serif">◇</span>
+              <span className="text-[14px]">No hay obras que coincidan</span>
+              <button onClick={() => { setFilter('Todas'); setSearch('') }}
+                className="text-[12px] text-gold border-b border-gold mt-1">
+                Limpiar filtros
+              </button>
+            </div>
+          ) : (
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-5">
+              {filtered.map((a, i) => {
+                const aspect = ASPECT_CYCLE[i % ASPECT_CYCLE.length]
+                return (
+                  <div
+                    key={a.id}
+                    className={`break-inside-avoid mb-5 bg-bg group reveal relative transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_16px_48px_oklch(0%_0_0/0.12)] ${i > 0 && i < 4 ? `rd${i}` : ''}`}
+                    style={{ boxShadow: '0 2px 8px oklch(0% 0 0 / 0.06)' }}
+                  >
+                    {/* Cover link */}
+                    <Link href={`/artworks/${a.id}`} className="absolute inset-0 z-1" aria-label={a.title} />
+
+                    {/* Framed image */}
+                    <div className="p-2.5" style={{ background: 'oklch(13% 0.010 75)' }}>
+                      <div className={`relative overflow-hidden ${aspect}`}>
+                        {a.assetThumbnail ? (
+                          <Image
+                            src={a.assetThumbnail}
+                            alt={a.title}
+                            fill
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            className="object-cover transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center" style={{ background: 'oklch(18% 0.010 75)' }}>
+                            <span className="font-serif text-[48px] opacity-10 text-[oklch(80%_0.05_75)]">◇</span>
+                          </div>
+                        )}
+
+                        {/* Hover overlay */}
+                        <div
+                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-350 flex flex-col justify-end p-4 z-20"
+                          style={{ background: 'linear-gradient(to top, oklch(10% 0.010 75 / .85) 0%, transparent 55%)' }}
+                        >
+                          <span className="text-[11px] tracking-[3px] uppercase text-gold font-medium">Ver obra →</span>
+                        </div>
+
+                        {/* Frame corner ornaments */}
+                        <FrameCorners size={28} opacity={0.7} />
+                      </div>
+                    </div>
+
+                    {/* Info */}
+                    <div className="px-4 py-4 relative z-2">
+                      <h3 className="font-serif text-[17px] font-bold leading-tight mb-1.5">{a.title}</h3>
+                      <div className="flex items-center gap-1.5 text-[11px] text-ink3 flex-wrap">
+                        <span className="tracking-[1.5px] uppercase">{TYPE_LABEL[a.type]}</span>
+                        <span className="text-(--border-md)">·</span>
+                        <Link
+                          href={`/artists/${a.artist.id}`}
+                          className="text-ink3 hover:text-ink transition-colors border-b border-transparent hover:border-(--border-md) z-2 relative"
+                        >
+                          {a.artist.name}
+                        </Link>
+                        {a.year && <><span className="text-(--border-md)">·</span><span>{a.year}</span></>}
+                      </div>
+                      {a.slot?.gallery && (
+                        <div className="mt-3">
+                          <span className="text-[10px] tracking-[0.8px] text-gold border border-[oklch(60%_0.130_82/0.25)] px-1.5 py-0.5 rounded-xs">
+                            ◇ {a.slot.gallery.name}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
     </>
   )
 }

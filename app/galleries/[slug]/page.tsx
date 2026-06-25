@@ -7,6 +7,7 @@ import { GalleryMasonry }    from '@/components/gallery/gallery-masonry'
 import { ArtistBar }         from '@/components/gallery/artist-bar'
 import { ShareButton }       from '@/components/gallery/share-button'
 import { ScrollReveal }      from '@/components/ui/scroll-reveal'
+import { ArtistAvatar }      from '@/components/ui/artist-avatar'
 import { getGalleryBySlug }  from '@/lib/services/gallery.service'
 import type { FloorMaterial } from '@prisma/client'
 import { TYPE_LABEL }         from '@/lib/labels'
@@ -147,12 +148,7 @@ export default async function GalleryPage({
 
             <div className="flex items-center gap-3 text-[13px] text-ink3 reveal rd2">
               <div className="w-7 h-7 rounded-full shrink-0 border-[1.5px] border-(--border-md) overflow-hidden">
-                {gallery.artist.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={gallery.artist.avatarUrl} alt={gallery.artist.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full" style={{ background: 'radial-gradient(ellipse at 25% 75%, oklch(68% .10 300), oklch(84% .14 82))' }} />
-                )}
+                <ArtistAvatar url={gallery.artist.avatarUrl} name={gallery.artist.name} size={28} />
               </div>
               <span>
                 Por{' '}

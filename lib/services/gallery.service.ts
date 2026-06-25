@@ -1,6 +1,7 @@
 import { revalidateTag } from 'next/cache'
 import { db } from '@/lib/db'
 import { PLAN_LIMITS } from './artist.service'
+import { toSlug } from '@/lib/utils/slug'
 import type { Gallery, Visibility, FloorMaterial, LightingPreset } from '@prisma/client'
 
 const galleryManifestTag = (id: string) => `manifest-${id}`
@@ -17,14 +18,6 @@ const WHITE_CUBE_8_SLOTS = [
   { position: 7, displayMode: 'FLOOR_MODEL' as const },
 ]
 
-function toSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Mn}/gu, '')  // elimina tildes
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-}
 
 // Genera un slug único añadiendo sufijo numérico si ya existe
 async function uniqueSlug(base: string): Promise<string> {
@@ -47,7 +40,7 @@ export async function assertGalleryQuota(artistId: string, plan: keyof typeof PL
 export async function createGallery(
   artistId: string,
   plan: keyof typeof PLAN_LIMITS,
-  data: { name: string; description?: string; visibility?: Visibility },
+  data: { name: string; description?: string; visibility?: Visibility; templateKey?: string },
 ): Promise<Gallery> {
   await assertGalleryQuota(artistId, plan)
 
@@ -59,6 +52,7 @@ export async function createGallery(
       name:        data.name,
       description: data.description ?? '',
       visibility:  data.visibility  ?? 'PRIVATE',
+      templateKey: data.templateKey ?? 'white-cube-8',
       artistId,
       // Pre-crear los 8 slots de la plantilla white-cube-8
       slots: { createMany: { data: WHITE_CUBE_8_SLOTS } },

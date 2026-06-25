@@ -23,7 +23,7 @@ export async function getArtistByClerkId(clerkId: string): Promise<Artist | null
 
 export async function updateArtist(
   artistId: string,
-  data: { name?: string; bio?: string; website?: string; avatarUrl?: string },
+  data: { name?: string; bio?: string; website?: string | null; avatarUrl?: string },
 ): Promise<Artist> {
   return db.artist.update({ where: { id: artistId }, data })
 }

@@ -186,7 +186,7 @@ describe('Lógica de filtros del dashboard de obras', () => {
     return artworks.filter(a => {
       if (typeFilter !== 'Todas' && a.type !== TYPE_MAP[typeFilter]) return false
       if (statusFilter === 'Expuestas'   && a.status !== 'EXPOSED') return false
-      if (statusFilter === 'Sin exponer' && a.status !== 'DRAFT')   return false
+      if (statusFilter === 'Borradores'  && a.status !== 'DRAFT')   return false
       if (search && !a.title.toLowerCase().includes(search.toLowerCase())) return false
       return true
     })
@@ -216,8 +216,8 @@ describe('Lógica de filtros del dashboard de obras', () => {
     expect(result.every(a => a.status === 'EXPOSED')).toBe(true)
   })
 
-  it('filtrar por Sin exponer devuelve solo obras DRAFT', () => {
-    const result = filterArtworks(artworks, 'Todas', 'Sin exponer', '')
+  it('filtrar por Borradores devuelve solo obras DRAFT', () => {
+    const result = filterArtworks(artworks, 'Todas', 'Borradores', '')
     expect(result).toHaveLength(2)
     expect(result.every(a => a.status === 'DRAFT')).toBe(true)
   })
