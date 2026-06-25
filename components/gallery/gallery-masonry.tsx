@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 interface Artwork {
   id:        string
@@ -20,16 +20,47 @@ interface Props {
 
 const HOVER_OVERLAY = 'linear-gradient(180deg, transparent 30%, oklch(97.5% 0.007 75 / .94) 100%)'
 
+function MobileThumbnail({ a, priority }: { a: Artwork; priority?: boolean }) {
+  const [imgFailed, setImgFailed] = useState(false)
+  return (
+    <Link
+      href={`/artworks/${a.id}`}
+      className="aspect-4/3 relative overflow-hidden border border-(--border) no-underline group bg-bg2"
+    >
+      {a.thumbnail && !imgFailed
+        ? <Image
+            src={a.thumbnail}
+            alt={a.title}
+            fill
+            sizes="(max-width: 768px) 50vw, 300px"
+            priority={priority}
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            onError={() => setImgFailed(true)}
+          />
+        : <div className="w-full h-full flex items-center justify-center"><span className="font-serif text-[28px] opacity-10">◇</span></div>
+      }
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex flex-col justify-end p-4" style={{ background: HOVER_OVERLAY }}>
+        <h3 className="font-serif text-[15px] font-bold mb-0.5 text-ink leading-tight">{a.title}</h3>
+        <p className="text-[10px] text-ink3 tracking-[2px] uppercase">{a.type} · {a.year}</p>
+      </div>
+    </Link>
+  )
+}
+
 function ArtworkCard({
-  a, i, className, style, onMouseMove, onMouseLeave,
+  a, i, priority, className, style, onMouseMove, onMouseLeave,
 }: {
   a: Artwork
   i: number
+  priority?: boolean
   className?: string
   style?: React.CSSProperties
   onMouseMove: (e: React.MouseEvent<HTMLAnchorElement>) => void
   onMouseLeave: (e: React.MouseEvent<HTMLAnchorElement>) => void
 }) {
+  const [imgFailed, setImgFailed] = useState(false)
+  const showImage = a.thumbnail && !imgFailed
+
   return (
     <Link
       href={`/artworks/${a.id}`}
@@ -42,8 +73,16 @@ function ArtworkCard({
         ...style,
       }}
     >
-      {a.thumbnail
-        ? <Image src={a.thumbnail} alt={a.title} fill sizes="(max-width: 768px) 50vw, 600px" className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
+      {showImage
+        ? <Image
+            src={a.thumbnail!}
+            alt={a.title}
+            fill
+            sizes="(max-width: 768px) 50vw, 600px"
+            priority={priority}
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            onError={() => setImgFailed(true)}
+          />
         : <div className="w-full h-full flex items-center justify-center"><span className="font-serif text-[40px] opacity-10">◇</span></div>
       }
       <div
@@ -101,6 +140,7 @@ export function GalleryMasonry({ artworks }: Props) {
               key={a.id}
               a={a}
               i={i}
+              priority={i === 0}
               onMouseMove={onMouseMove}
               onMouseLeave={onMouseLeave}
               className={isSingle ? 'w-full' : 'flex-1'}
@@ -110,21 +150,8 @@ export function GalleryMasonry({ artworks }: Props) {
         </div>
         {/* Mobile */}
         <div className="md:hidden grid grid-cols-2 gap-2.5">
-          {artworks.map((a) => (
-            <Link
-              key={a.id}
-              href={`/artworks/${a.id}`}
-              className="aspect-4/3 relative overflow-hidden border border-(--border) no-underline group bg-bg2"
-            >
-              {a.thumbnail
-                ? <Image src={a.thumbnail} alt={a.title} fill sizes="(max-width: 768px) 50vw, 600px" className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
-                : <div className="w-full h-full flex items-center justify-center"><span className="font-serif text-[28px] opacity-10">◇</span></div>
-              }
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex flex-col justify-end p-4" style={{ background: HOVER_OVERLAY }}>
-                <h3 className="font-serif text-[15px] font-bold mb-0.5 text-ink leading-tight">{a.title}</h3>
-                <p className="text-[10px] text-ink3 tracking-[2px] uppercase">{a.type} · {a.year}</p>
-              </div>
-            </Link>
+          {artworks.map((a, i) => (
+            <MobileThumbnail key={a.id} a={a} priority={i === 0} />
           ))}
         </div>
       </>
@@ -136,21 +163,8 @@ export function GalleryMasonry({ artworks }: Props) {
     <>
       {/* Mobile: 2 columnas */}
       <div className="md:hidden grid grid-cols-2 gap-2.5">
-        {artworks.map((a) => (
-          <Link
-            key={a.id}
-            href={`/artworks/${a.id}`}
-            className="aspect-4/3 relative overflow-hidden border border-(--border) no-underline group bg-bg2"
-          >
-            {a.thumbnail
-              ? <Image src={a.thumbnail} alt={a.title} fill sizes="(max-width: 768px) 50vw, 600px" className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
-              : <div className="w-full h-full flex items-center justify-center"><span className="font-serif text-[28px] opacity-10">◇</span></div>
-            }
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 flex flex-col justify-end p-4" style={{ background: HOVER_OVERLAY }}>
-              <h3 className="font-serif text-[15px] font-bold mb-0.5 text-ink leading-tight">{a.title}</h3>
-              <p className="text-[10px] text-ink3 tracking-[2px] uppercase">{a.type} · {a.year}</p>
-            </div>
-          </Link>
+        {artworks.map((a, i) => (
+          <MobileThumbnail key={a.id} a={a} priority={i === 0} />
         ))}
       </div>
       {/* Desktop: masonry 12 cols */}
@@ -163,6 +177,7 @@ export function GalleryMasonry({ artworks }: Props) {
             key={a.id}
             a={a}
             i={i}
+            priority={i === 0}
             onMouseMove={onMouseMove}
             onMouseLeave={onMouseLeave}
             style={{ gridColumn: a.gridCol, gridRow: a.gridRow }}
