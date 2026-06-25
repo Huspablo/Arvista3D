@@ -7,6 +7,7 @@ import { useArtist } from '@/lib/hooks/use-artist'
 import { PLAN_LIMITS } from '@/lib/services/artist.service'
 import { useFocusTrap } from '@/lib/hooks/use-focus-trap'
 import { GalleryPreview } from '@/components/dashboard/gallery-preview'
+import { EditGalleryPanel } from '@/components/dashboard/edit-gallery-panel'
 
 const BAR_COLOR  = { PUBLIC: 'var(--color-ok)', PRIVATE: 'var(--color-gold)' }
 const PLAN_LABEL = { BASIC: 'Básico', STANDARD: 'Estándar', PREMIUM: 'Premium' } as const
@@ -21,6 +22,7 @@ export function GalleriesManager() {
   const limits = PLAN_LIMITS[plan]
   const slots  = limits.galleries - galleries.length
 
+  const [editTarget,   setEditTarget]   = useState<GalleryWithCount | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [isDeleting,   setIsDeleting]   = useState(false)
   const [deleteError,  setDeleteError]  = useState('')
@@ -43,6 +45,8 @@ export function GalleriesManager() {
 
   return (
     <>
+      <EditGalleryPanel gallery={editTarget} onClose={() => setEditTarget(null)} />
+
       {/* ── Modal: confirmación de borrado ── */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 backdrop-blur-sm">
@@ -193,6 +197,12 @@ export function GalleriesManager() {
 
               {/* Actions */}
               <div className="flex gap-1.5 px-5 pb-4 pt-3 border-t border-(--border)">
+                <button
+                  onClick={() => setEditTarget(g)}
+                  className="text-[12px] px-4 py-1.75 border border-(--border) rounded-xs text-ink3 hover:border-(--border-md) hover:text-ink transition-all"
+                >
+                  Editar
+                </button>
                 <Link
                   href="/dashboard/artworks"
                   className="text-[12px] px-4 py-1.75 border border-(--border) rounded-xs text-ink3 no-underline hover:border-(--border-md) hover:text-ink transition-all"
