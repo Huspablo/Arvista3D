@@ -162,99 +162,103 @@ export function HeroSection() {
         <div className="art-frame art-p5" style={{ width: 75, height: 90, bottom: 60, right: -22, animation: 'fl4 10s ease-in-out infinite 1.5s' }} />
 
         {/* ── Desktop: horizontal accordion ───────────────────────────────── */}
-        <div className="relative max-md:hidden">
-          <div
-            className="relative flex h-[58vh] max-h-130 overflow-hidden bg-ink"
-            role="group"
-            aria-label="Galería de imágenes"
-            onMouseLeave={() => setHoveredIdx(null)}
-          >
-            {PANELS.map((panel, i) => {
-              const isActive = i === displayedIdx
-              return (
-                <div
-                  key={panel.src}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={isActive}
-                  aria-label={panel.alt}
-                  className="relative overflow-hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-gold focus-visible:-outline-offset-2"
-                  style={{
-                    flexGrow:   isActive ? FLEX_ACTIVE : FLEX_INACTIVE,
-                    flexShrink: 1,
-                    flexBasis:  '0%',
-                    minWidth:   '36px',
-                    transition: 'flex-grow 0.65s cubic-bezier(.22,1,.36,1)',
-                  }}
-                  onMouseEnter={() => onPanelEnter(i)}
-                  onFocus={() => onPanelEnter(i)}
-                  onBlur={() => setHoveredIdx(null)}
-                  onClick={() => { setActiveIdx(i); setHoveredIdx(null) }}
-                >
-                  {/* Image — scales in slightly when inactive */}
-                  <Image
-                    src={panel.src}
-                    alt={panel.alt}
-                    fill
-                    sizes="(max-width: 1280px) 60vw, 30vw"
-                    priority={i === 0}
-                    className="object-cover"
-                    style={{
-                      transform:  isActive ? 'scale(1)' : 'scale(1.06)',
-                      transition: 'transform 0.7s cubic-bezier(.22,1,.36,1)',
-                    }}
-                  />
-
-                  {/* Dark tint on inactive panels */}
+        <div className="max-md:hidden">
+          {/* Height wrapper without overflow-hidden — badges positioned here and won't be clipped */}
+          <div className="relative h-[58vh] max-h-130">
+            {/* Inner accordion — only this clips the images */}
+            <div
+              className="absolute inset-0 flex overflow-hidden bg-ink"
+              role="group"
+              aria-label="Galería de imágenes"
+              onMouseLeave={() => setHoveredIdx(null)}
+            >
+              {PANELS.map((panel, i) => {
+                const isActive = i === displayedIdx
+                return (
                   <div
-                    className="absolute inset-0 pointer-events-none"
+                    key={panel.src}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={isActive}
+                    aria-label={panel.alt}
+                    className="relative overflow-hidden cursor-pointer focus-visible:outline-2 focus-visible:outline-gold focus-visible:-outline-offset-2"
                     style={{
-                      background: 'oklch(8% 0 0 / 0.30)',
-                      opacity:    isActive ? 0 : 1,
-                      transition: 'opacity 0.55s ease',
+                      flexGrow:   isActive ? FLEX_ACTIVE : FLEX_INACTIVE,
+                      flexShrink: 1,
+                      flexBasis:  '0%',
+                      minWidth:   '36px',
+                      transition: 'flex-grow 0.65s cubic-bezier(.22,1,.36,1)',
                     }}
-                  />
-
-                  {/* Active: gradient + label + counter */}
-                  <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: 'linear-gradient(to top, oklch(8% 0.012 75 / 0.72) 0%, transparent 50%)',
-                      opacity:    isActive ? 1 : 0,
-                      transition: 'opacity 0.5s ease',
-                    }}
+                    onMouseEnter={() => onPanelEnter(i)}
+                    onFocus={() => onPanelEnter(i)}
+                    onBlur={() => setHoveredIdx(null)}
+                    onClick={() => { setActiveIdx(i); setHoveredIdx(null) }}
                   >
-                    <div className="absolute bottom-0 left-0 right-0 px-5 py-5 flex items-end justify-between">
-                      <span
-                        className="text-[9px] tracking-[4px] uppercase font-medium"
-                        style={{ color: 'oklch(65% 0.130 82)' }}
-                      >
-                        ◇ {panel.label}
-                      </span>
-                      <span
-                        className="text-[10px] font-mono tabular-nums"
-                        style={{ color: 'oklch(80% 0 0 / 0.55)' }}
-                      >
-                        {String(i + 1).padStart(2, '0')}&thinsp;/&thinsp;{PANELS.length}
-                      </span>
+                    {/* Image — scales in slightly when inactive */}
+                    <Image
+                      src={panel.src}
+                      alt={panel.alt}
+                      fill
+                      sizes="(max-width: 1280px) 60vw, 30vw"
+                      priority={i === 0}
+                      className="object-cover"
+                      style={{
+                        transform:  isActive ? 'scale(1)' : 'scale(1.06)',
+                        transition: 'transform 0.7s cubic-bezier(.22,1,.36,1)',
+                      }}
+                    />
+
+                    {/* Dark tint on inactive panels */}
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: 'oklch(8% 0 0 / 0.30)',
+                        opacity:    isActive ? 0 : 1,
+                        transition: 'opacity 0.55s ease',
+                      }}
+                    />
+
+                    {/* Active: gradient + label + counter */}
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: 'linear-gradient(to top, oklch(8% 0.012 75 / 0.72) 0%, transparent 50%)',
+                        opacity:    isActive ? 1 : 0,
+                        transition: 'opacity 0.5s ease',
+                      }}
+                    >
+                      <div className="absolute bottom-0 left-0 right-0 px-5 py-5 flex items-end justify-between">
+                        <span
+                          className="text-[9px] tracking-[4px] uppercase font-medium"
+                          style={{ color: 'oklch(65% 0.130 82)' }}
+                        >
+                          ◇ {panel.label}
+                        </span>
+                        <span
+                          className="text-[10px] font-mono tabular-nums"
+                          style={{ color: 'oklch(80% 0 0 / 0.55)' }}
+                        >
+                          {String(i + 1).padStart(2, '0')}&thinsp;/&thinsp;{PANELS.length}
+                        </span>
+                      </div>
                     </div>
+
+                    {/* Gold accent line — sweeps in from left on activation */}
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-px pointer-events-none"
+                      style={{
+                        background:      'linear-gradient(to right, oklch(60% 0.130 82), oklch(68% 0.140 82 / 0))',
+                        transform:       isActive ? 'scaleX(1)' : 'scaleX(0)',
+                        transformOrigin: 'left center',
+                        transition:      'transform 0.6s cubic-bezier(.22,1,.36,1) 0.15s',
+                      }}
+                    />
                   </div>
+                )
+              })}
+            </div>
 
-                  {/* Gold accent line — sweeps in from left on activation */}
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-px pointer-events-none"
-                    style={{
-                      background:      'linear-gradient(to right, oklch(60% 0.130 82), oklch(68% 0.140 82 / 0))',
-                      transform:       isActive ? 'scaleX(1)' : 'scaleX(0)',
-                      transformOrigin: 'left center',
-                      transition:      'transform 0.6s cubic-bezier(.22,1,.36,1) 0.15s',
-                    }}
-                  />
-                </div>
-              )
-            })}
-
-            {/* Floating badge */}
+            {/* Floating badge — sibling of overflow-hidden, never clipped */}
             <div
               className="absolute bottom-6 -left-7 bg-bg border border-(--border) px-5 py-3.5 shadow-md flex flex-col gap-0.5 z-20"
               style={{ animation: 'fl2 7s ease-in-out infinite' }}
@@ -263,12 +267,21 @@ export function HeroSection() {
               <span className="text-[11px] text-ink3 tracking-[2px] uppercase">Artista · Madrid</span>
             </div>
 
-            {/* Tag */}
+            {/* Tag — sibling of overflow-hidden, never clipped */}
             <div
               className="absolute top-6 -right-5 bg-gold text-bg px-4 py-2 text-[11px] font-semibold tracking-[2px] uppercase z-20"
               style={{ animation: 'fl1 9s ease-in-out infinite 1s' }}
             >
               Galería abierta
+            </div>
+
+            {/* Stat chip */}
+            <div
+              className="absolute bottom-5 right-5 bg-bg border border-(--border) px-4 py-2.5 shadow-md flex flex-col gap-0.5 z-20"
+              style={{ animation: 'fl3 11s ease-in-out infinite 3s' }}
+            >
+              <span className="font-serif text-[20px] font-black text-ink leading-none">+8k</span>
+              <span className="text-[9px] text-ink3 tracking-[2px] uppercase">obras activas</span>
             </div>
           </div>
 
