@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useArtist } from '@/lib/hooks/use-artist'
 import { useGalleries } from '@/lib/hooks/use-galleries'
 import { useArtworks } from '@/lib/hooks/use-artworks'
-import { PLAN_LIMITS } from '@/lib/services/artist.service'
+import { PLAN_LIMITS, PLANS, PLAN_KEY_MAP } from '@/lib/plans'
 
 type Invoice = {
   id:     string
@@ -15,53 +15,6 @@ type Invoice = {
   status: string
   url:    string | null
 }
-
-const PLANS = [
-  {
-    key:      'basico',
-    planEnum: 'BASIC'    as const,
-    label:    'Básico',
-    price:    0,
-    period:   'gratis',
-    features: [
-      `${PLAN_LIMITS.BASIC.galleries} galería pública`,
-      `Hasta ${PLAN_LIMITS.BASIC.artworksPerGallery} obras por galería`,
-      'Viewer 3D incluido',
-      'Dominio arvista.art/galleries/…',
-    ],
-  },
-  {
-    key:      'estandar',
-    planEnum: 'STANDARD' as const,
-    label:    'Estándar',
-    price:    12,
-    period:   '/ mes',
-    features: [
-      `${PLAN_LIMITS.STANDARD.galleries} galerías públicas`,
-      `Hasta ${PLAN_LIMITS.STANDARD.artworksPerGallery} obras por galería`,
-      'Viewer 3D incluido',
-      'Analítica de visitas',
-      'Eliminar marca de agua',
-    ],
-  },
-  {
-    key:      'premium',
-    planEnum: 'PREMIUM'  as const,
-    label:    'Premium',
-    price:    29,
-    period:   '/ mes',
-    features: [
-      `${PLAN_LIMITS.PREMIUM.galleries} galerías públicas`,
-      `Hasta ${PLAN_LIMITS.PREMIUM.artworksPerGallery} obras por galería`,
-      'Viewer 3D incluido',
-      'Analítica avanzada',
-      'Soporte prioritario',
-      'Dominio personalizado (próx.)',
-    ],
-  },
-]
-
-const PLAN_KEY_MAP = { BASIC: 'basico', STANDARD: 'estandar', PREMIUM: 'premium' } as const
 
 export function PlanManager() {
   const [billing,     setBilling]     = useState<'monthly' | 'annual'>('monthly')

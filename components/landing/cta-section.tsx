@@ -30,7 +30,7 @@ export function CtaSection() {
           <span className="relative z-1">Crear cuenta gratis</span>
         </Link>
         <Link
-          href="/dashboard/plan"
+          href="/pricing"
           className="bg-transparent text-ink px-10 py-4 rounded-xs border-[1.5px] border-(--border-md) text-[15px] font-light tracking-[0.4px] no-underline hover:border-ink hover:-translate-y-0.5 transition-all ease-[cubic-bezier(.22,1,.36,1)]"
         >
           Ver planes

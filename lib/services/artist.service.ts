@@ -1,12 +1,6 @@
 import { db } from '@/lib/db'
 import type { Artist } from '@prisma/client'
-
-// Límites de plan — fuente de verdad única para toda la app
-export const PLAN_LIMITS = {
-  BASIC:    { galleries: 1, artworksPerGallery: 10 },
-  STANDARD: { galleries: 2, artworksPerGallery: 20 },
-  PREMIUM:  { galleries: 3, artworksPerGallery: 50 },
-} as const
+export { PLAN_LIMITS } from '@/lib/plans'
 
 // Obtiene el artista por clerkId. Si no existe lo crea (primer login).
 export async function getOrCreateArtist(clerkId: string): Promise<Artist> {
