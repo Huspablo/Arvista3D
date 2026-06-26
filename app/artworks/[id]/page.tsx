@@ -32,13 +32,10 @@ export default async function ArtworkPage({
   // viewCount se incrementa cada visita a la página pública (fire-and-forget)
   db.artwork.update({ where: { id }, data: { viewCount: { increment: 1 } } }).catch(() => null)
 
-  // Construir el array de imágenes para el carrusel
-  // detail (máx resolución) va primero, gallery y thumbnail como adicionales
-  const arts = [
-    artwork.assetDetail,
-    artwork.assetGallery,
-    artwork.assetThumbnail,
-  ].filter((url): url is string => Boolean(url))
+  // assetDetail/Gallery/Thumbnail son derivados de resolución de la misma imagen,
+  // no vistas distintas de la obra. Usamos solo el de mayor calidad disponible.
+  const primaryAsset = artwork.assetDetail ?? artwork.assetGallery ?? artwork.assetThumbnail
+  const arts = primaryAsset ? [primaryAsset] : []
 
   // Formatear dimensiones
   const dims = artwork.dimWidth && artwork.dimHeight
